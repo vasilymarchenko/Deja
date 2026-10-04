@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Node / Chrome extension
+node_modules/
+extension/dist/
+extension/web-ext-artifacts/
+*.crx
+*.pem
+*.tsbuildinfo
+npm-debug.log*
+.vite/
+
+# Docker / deploy
+docker-compose.override.yml
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Data and backups
+*.dump
+*.sql.gz
+pgdata/
+backups/
+data/
+
+# Logs
+*.log
+
+# IDE / OS
+.idea/
+.vscode/
+.vs/
+.DS_Store
+Thumbs.db
+
+# Claude Code (personal)
+.claude/settings.local.json
+CLAUDE.local.md
