@@ -33,7 +33,7 @@
 
 Rules for filling it:
 
-- **Always emit it** as the final output, once per run, after the commit is proposed. Never end a
+- **Always emit it** as the final output, once per run, after the commit is proposed. *Proposed* means printed: a skill never runs `git commit` itself; the user commits, or says «commit». Never end a
   skill on a bare «Next: X».
 - **What I did** — concrete and self-contained: name the files written and the proposed commit
   message, so the user doesn't scroll up to reconstruct it.
@@ -66,9 +66,9 @@ Rules for filling it:
 
 | Stage | Review before continuing (files written) | Run next |
 |---|---|---|
-| `interview product` | `docs/idea-brief.md` (+ `docs/CONTEXT.md`) | `/roadmap` → `/map-architecture` → `/interview <first slug>` |
+| `interview product` | `docs/idea-brief.md` (+ `docs/CONTEXT.md`) | `/map-architecture` → `/roadmap` → `/interview <first slug>` |
 | `interview <slug>` | `docs/features/<slug>/idea-brief.md` (+ `docs/CONTEXT.md`) | `/write-prd <slug>` |
-| `map-architecture` | `docs/architecture-map.md` (+ scaffold `tasks.json` on greenfield) | `/write-prd <slug>` |
+| `map-architecture` | `docs/architecture-map.md` + `docs/adr/` (+ scaffold `tasks.json` on greenfield) | first run: `/roadmap`; otherwise `/write-prd <slug>` |
 | `write-prd` | `docs/features/<slug>/PRD.md` | `/clarify-prd <slug>` |
 | `clarify-prd` | `docs/features/<slug>/PRD.md` (tightened) | `/fix-term <slug>` ↳ or `/architecture-design <slug>` |
 | `architecture-design` | `sad.md` (C4 §3/§5 + `target_surfaces`) + `adr/` | `/complete-sequence-diagrams <slug>` |
@@ -79,11 +79,11 @@ Rules for filling it:
 | `plan-tests` | `test-plan.md` (or `PRD.md` `## Test plan` for XS/S) | `/implement-tasks <slug>` |
 | `implement-tasks` | the committed diff (code + tests) + `tasks/tracker.md` | `/review-feature <slug>` |
 | `review-feature` | `_review/review-<date>.md` | `/ship-feature <slug>` (PASS) · `/implement-tasks <slug>` (CHANGES, no `/clear`) |
-| `ship-feature` | `CHANGELOG.md` + `docs/roadmap.md` | **Done** — ff-merge the branch to `main` (no PRs in this repo); merge is your call |
+| `ship-feature` | `CHANGELOG.md` + `docs/roadmap.md` | **Done** — ff-merge the branch to `main` (`[assume:remote=none]` in `CLAUDE.md`; open a PR instead once a remote exists); merge is your call |
 | `classify-size` | `.size` | resume — e.g. `/write-prd <slug>` |
 | `fix-term` | `CONTEXT.md` | resume — e.g. `/architecture-design <slug>` |
 | `decide-adr` | `adr/NNNN-<title>.md` | resume — `/break-tasks <slug>` or `/plan-tests <slug>` |
-| `roadmap` | `docs/roadmap.md` | first run: `/map-architecture`; otherwise resume your backbone stage |
+| `roadmap` | `docs/roadmap.md` | first run: `/implement-tasks _scaffold` then `/interview <first slug>`; otherwise resume your backbone stage |
 
 ## Discipline
 

@@ -1,17 +1,52 @@
-# SDLC skills (course toolkit)
+# SDLC process and skills
 
-The original skills of the course toolkit, from `C:\Work\Personal\agentic-engineering-course\sdlc\plugin\skills\`.
-They are listed in the order of use, from a raw idea to a shipped feature.
-🚪 means a hard gate: the skill refuses to run if its input artifact is missing.
-"Ad-hoc" means the skill can run at any stage.
+How Deja is built with the course SDLC toolkit. The reasons for each adaptation are in `docs/process-log.md`.
+
+## Source
+
+`C:\Work\Personal\agentic-engineering-course\sdlc` — read-only reference; never edit it.
+- `plugin/skills/<name>/` — skills (`SKILL.md` + `templates/` + `references/`), `plugin/skills/_shared/` — shared references.
+- `plugin/agents/` — agents. `document-templates/` — cross-feature snippets. `examples/` — reference runs.
+- `00-overview/` — process map, DoR/DoD, MVP vs full artifact set.
+
+## Adoption rules
+
+The toolkit is adopted piece by piece, not installed as a plugin. The user decides what to copy and when.
+- Copy a skill to `.claude/skills/<name>/`, an agent to `.claude/agents/<name>.md`, the `_shared/` files it references to `.claude/skills/_shared/`.
+- Adapt on copy: fix paths, drop the `sdlc:` agent namespace, point stack hints at `docs/architecture-map.md` (or the candidate table in `map-architecture/references/foundation.md` until the map exists), apply the language and role rules of `CLAUDE.md`. Where the course assumes a remote, PRs, CI or many users, branch on the `[assume:…]` tags in `CLAUDE.md` instead of hardcoding the current state.
+- A skill proposes a commit; it never runs `git commit`.
+- Before using an uncopied skill, read its `SKILL.md` in the source. Do not invent its protocol.
+- Every process decision (copying or adapting a skill, dropping a course rule, changing the pipeline) gets an entry in `docs/process-log.md` the same day: what, why, what was rejected, where it lives.
+- Artifact size scales with task size (`00-overview/mvp-vs-full.md`). When in doubt, use the MVP set.
+- Deja-wide deviation: **no RICE anywhere** (`[assume:users=one]`). Priority is argued in words.
+
+## Stages, in order
+
+1. **Product** (P): `/interview product` → `docs/idea-brief.md`. «Складові продукту» is the feature list; «Фундамент і експлуатація» is the input for T.
+2. **Foundation** (T): `/map-architecture` → `docs/architecture-map.md` + `docs/adr/` + `docs/features/_scaffold/tasks.json`. Confirms or replaces the stack candidates and states which capabilities technically depend on which. Then `/implement-tasks _scaffold` builds the skeleton.
+3. **Order** (P): `/roadmap` → `docs/roadmap.md`. P orders the capabilities; T's dependency table is the only constraint.
+4. **Features**: `/interview <slug>` → `write-prd` → `clarify-prd` → `architecture-design` → … → `ship-feature`, per feature. Feature slug: `kebab-case`, no epic number, from «Складові продукту».
+
+`ship-feature` in this repo updates `CHANGELOG.md` and `docs/roadmap.md`, then the branch is ff-merged to `main` (`[assume:remote=none]`: no PR body).
+
+## Adopted so far
+
+Invoked as `/<name>`, from `.claude/skills/`:
+- `interview` (product + feature modes), `fix-term`, `map-architecture` (role T; candidates confirmed, not menus; capability dependencies; owns the ADR template), `roadmap` (role P; runs after `map-architecture`).
+- Shared refs: `_shared/ask-style.md` (incl. the role rule), `_shared/handoff.md`, `_shared/mermaid-check.md`.
+- Agents: `researcher`, `strategist`, `analyst`, `devils-advocate`.
+
+## All course skills, in order of use
+
+🚪 means a hard gate: the skill refuses to run if its input artifact is missing. "Ad-hoc" means the skill can run at any stage.
 
 ## Idea and framing
 
-1. **`interview`** — turns a raw idea into a structured brief. It runs a Socratic interview, competitive research, three strategic approaches, a multi-perspective review and a devil's advocate pass. Output: `docs/features/<slug>/idea-brief.md`. Deja adaptation: no RICE score (one user, the score ranks nothing); priority is argued in words in the brief. Two modes: `/interview product` writes the product brief `docs/idea-brief.md` with the capability list; `/interview <slug>` writes a feature brief that reads the product one.
+1. **`interview`** (role P) — turns a raw idea into a structured brief. It runs a Socratic interview, competitive research, three strategic approaches, a multi-perspective review and a devil's advocate pass. Output: `docs/features/<slug>/idea-brief.md`. Deja adaptation: no RICE score (one user, the score ranks nothing); priority is argued in words in the brief. Two modes: `/interview product` writes the product brief `docs/idea-brief.md` with the capability list (next: `map-architecture`); `/interview <slug>` writes a feature brief that reads the product one.
 2. **`scaffold`** — creates a new project from the course `base-tpl` template. It asks about the stack and optional parts (frontend, deploy, CI, observability) and removes what you do not pick. Used only in an empty folder, right after `interview`.
-3. **`map-architecture`** — builds the architecture map that every later skill reads. On existing code it scans the repo once; on an empty repo it agrees the stack, structure and conventions with you and writes foundational ADRs plus a scaffold `tasks.json`. Output: `docs/architecture-map.md`.
+3. **`map-architecture`** (role T) — builds the architecture map that every later skill reads. On existing code it scans the repo once; on an empty repo it walks the stack candidates with you (confirm / replace / defer), writes foundational ADRs plus a scaffold `tasks.json`, and states which capabilities technically depend on which. Deja adaptation: candidates from its own reference table and the draft plan instead of menus; the dependency table is the only constraint `roadmap` accepts; answers the brief's §14 questions due at this stage; no CI task while `[assume:remote=none]`. Output: `docs/architecture-map.md`, `docs/adr/`, `docs/features/_scaffold/tasks.json`. Runs **before** `roadmap`.
 4. **`classify-size`** (ad-hoc) — decides how big a feature is: XS, S, M, L or XL. It asks four questions (PR count, time, new module/API/migration, breaking changes) and maps the answers to a size. Output: `docs/features/<slug>/.size`; later skills use it to decide how much to write.
-5. **`roadmap`** (ad-hoc) — keeps one board of outcomes above single features. It adds items to Now / Next / Later with a RICE score and moves them between columns. Copied for Deja without RICE: Next is hand-ordered with one reason per row; the first run is seeded from the product brief. Output: `docs/roadmap.md`; `write-prd` moves an item to Now, `ship-feature` moves it to Shipped.
+5. **`roadmap`** (ad-hoc, role P) — keeps one board of outcomes above single features. It adds items to Now / Next / Later with a RICE score and moves them between columns. Copied for Deja without RICE: the first run is seeded from the product brief and runs after `map-architecture`; P orders Next at each branching point, with T's dependency table as the only constraint; one reason per row in P's words. Output: `docs/roadmap.md`; `write-prd` moves an item to Now, `ship-feature` moves it to Shipped.
 6. **`fix-term`** (ad-hoc) — fixes the meaning of a domain term before it drifts. It adds one definition plus "NOT to be confused with" to the glossary, in English with a Ukrainian translation, and checks for conflicts. Output: `CONTEXT.md`; `write-prd` needs it.
 
 ## Requirements

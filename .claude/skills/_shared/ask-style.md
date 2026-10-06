@@ -39,6 +39,10 @@ If a question reads like a config dump or a spec excerpt, it's wrong. Write it a
 3. **The skill's next mechanical step** — «I spawn ADR-NNNN titled X, add a row to the §9 ADR table, the schema is locked for the data-model stage».
 4. **Hidden trade-off** — if there's a condition under which the choice breaks («only works if Redis is already in your stack», «in 6 months you'll need downtime for a backfill», «existing users have to re-login»), state it **right in the description**, not in a follow-up. A junior won't see that trigger on their own.
 
+## Role
+
+Deja has two roles, both played by the same person: **P (product)** decides *what*, **T (technical)** decides *how* (see `CLAUDE.md` → Two roles). Every `AskUserQuestion` names the role it addresses, as the first word of `question` — «**P:** …» or «**T:** …» — so the user knows which hat to wear. A question never mixes the two: a P question offers no implementation choices, a T question does not re-open scope. If a decision needs both, split it into two questions and ask the P one first.
+
 ## Language
 
 - **Ukrainian throughout** — labels + descriptions. Technical identifiers stay in their original form (ADR, JSONB, JWT, UUID, FK, OpenAPI) — they are names. The *actions* are Ukrainian («Прийняти», «Відредагувати», «Винести у §11 OQ», «Видалити»).

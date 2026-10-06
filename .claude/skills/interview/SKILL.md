@@ -10,7 +10,7 @@ description: >-
   "/interview <slug>", "raw idea", "capture an idea", "interview a feature", "brief for X",
   "idea brief", "new feature X", "ideation for <slug>", "start epic N", "інтерв'ю фічі",
   "бриф ідеї", "нова фіча". Two modes: "/interview product" writes the product-level brief
-  docs/idea-brief.md (next stage: roadmap); "/interview <slug>" writes a feature brief
+  docs/idea-brief.md (next stage: map-architecture); "/interview <slug>" writes a feature brief
   under docs/features/<slug>/ (next stage: write-prd). Does not write ADRs — that is
   architecture-design.
 ---
@@ -19,7 +19,7 @@ description: >-
 
 One autonomous, Claude-driven protocol for the ideation phase. Output: one idea-brief with 14 sections — `docs/idea-brief.md` in **product mode**, `docs/features/<slug>/idea-brief.md` in **feature mode**. No separate brainstorm or initiatives files.
 
-Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/interview`). Changes for Deja: the course greenfield mode (auto-detected by an empty folder, hands off to `scaffold`) is replaced by an explicit **product mode** that works in the existing repo and hands off to `roadmap`; agents are local (`.claude/agents/`); the glossary is `docs/CONTEXT.md`; the brief is written in Ukrainian; **no RICE** (a solo product with one user — Reach is always 1, the score ranks nothing; priority is argued in §4 and in roadmap order); glossary terms are confirmed in the plan phase and written without `fix-term` questions; the tech-term check is derived from living docs instead of a hardcoded word list.
+Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/interview`). Changes for Deja: the course greenfield mode (auto-detected by an empty folder, hands off to `scaffold`) is replaced by an explicit **product mode** that works in the existing repo and hands off to `roadmap`; agents are local (`.claude/agents/`); the glossary is `docs/CONTEXT.md`; the brief is written in Ukrainian; **no RICE** (`[assume:users=one]` in `CLAUDE.md` — Reach is always 1, the score ranks nothing; priority is argued in §4 and in roadmap order); glossary terms are confirmed in the plan phase and written without `fix-term` questions; the tech-term check is derived from living docs instead of a hardcoded word list.
 
 ## Two modes
 
@@ -35,7 +35,7 @@ Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/
 | Phase 6 lenses | judge the product approaches | judge the feature approaches; do not repeat product-level conclusions |
 | Phase 8 devil's advocate | attacks the product thesis ("search by why I saved it") | attacks the feature |
 | Phase 10 Feasibility | no repo scan; based on `CLAUDE.md` stack and the user's skills and time | repo scan + planned stack |
-| Handoff | `/roadmap` | `/write-prd <slug>` |
+| Handoff | `/map-architecture` | `/write-prd <slug>` |
 
 **Mode detection.** The slug `product` selects product mode. Anything else is feature mode. There is no auto-detect: the repo exists, so the course's empty-folder rule would never fire.
 
@@ -80,7 +80,7 @@ The brief describes **what the user gets**, never **how we build it**. There is 
 - every term that `docs/initial-idea/second-brain.md` uses in its prose — it is the product doc written for the user.
 
 **Forbidden by source (no judgment needed):**
-- every product, library, service and protocol name listed under `## Stack` in `CLAUDE.md` (build the list at run time; do not copy it here);
+- every product, library, service and protocol name in the stack section of `docs/architecture-map.md` or, until it exists, in the candidate table of `.claude/skills/map-architecture/references/foundation.md` (build the list at run time; do not copy it here);
 - numeric engineering targets: latency, percentiles, dimensions, sizes, SLOs.
 
 **Grey zone.** A word that is in neither source goes through the audience test. If Claude is not sure, it does not decide alone: Phase 13 collects all such words into one `AskUserQuestion` batch (keep as product term / replace with plain wording / move to §14 Open questions as a PRD-level detail). Terms confirmed as product terms are candidates for `docs/CONTEXT.md` (Phase 3).
@@ -169,7 +169,7 @@ Phase numbers and brief section numbers differ. Use this table when a phase says
 - **Read** `./templates/idea-brief.md` into session memory. Do not copy it yet.
 - **Read** product context: `docs/initial-idea/second-brain.md`, `docs/initial-idea/second-brain-plan.md` (the matching epic; in product mode the whole plan — its epics are candidate capabilities), and `docs/roadmap.md` / `docs/architecture-map.md` if present.
 - **Feature mode:** read `docs/idea-brief.md` if present; keep its §6, §8, §10 and "Складові продукту" as upstream context. Note which row of "Складові продукту" this feature is.
-- **Read** `CLAUDE.md` → `## Stack`; keep the list of names as the session denylist for Phase 13.
+- **Read** `docs/architecture-map.md` → Stack (or, until it exists, the candidate table in `.claude/skills/map-architecture/references/foundation.md`); keep the list of names as the session denylist for Phase 13.
 - **Read** `docs/CONTEXT.md` if it exists; keep `## Glossary` as session state (allowlist for Phase 13, conflict check for Phase 3).
 - **Check** the target brief (`docs/idea-brief.md` or `docs/features/<slug>/idea-brief.md`). If it exists with `status: Confirmed` and is ≤2 weeks old, stop and offer an update instead.
 - **No Write / Edit / mkdir.**
@@ -315,7 +315,7 @@ Run all checks (Read + Grep over the written file):
 - **14 sections present** — 1–14 + Related + DoD self-check filled (product mode: plus "Складові продукту" with ≥1 row per epic of the plan, or an explicit "dropped" note).
 - **Product brief linked** — feature mode with `docs/idea-brief.md` present: "Пов'язане" links it and names the "Складові продукту" row.
 - **No implementation terms in the body.** Build the check at run time, excluding frontmatter and HTML comments:
-  1. Grep for every name from the Phase 0 denylist (`CLAUDE.md` → `## Stack`), word boundaries on. Any hit → rewrite the sentence in product language.
+  1. Grep for every name from the Phase 0 denylist (the map's Stack section / the candidate table), word boundaries on. Any hit → rewrite the sentence in product language.
   2. Grep for numeric engineering targets (`ms`, `p9\d`, `dims?`, `SLO`, `QPS`). Any hit → move to §14 Open questions as "for the PRD".
   3. Read the body once more for grey-zone words (English technical nouns not in `## Glossary` and not in `second-brain.md`). Apply the audience test. Words Claude cannot decide go to **one** `AskUserQuestion` batch: keep / replace with plain wording / move to §14.
 - **Word budget** per depth (see Depth regulator), body only. If over: shorten §8 bullets and the §9 pros/cons table first, then §10. Never drop a competitor row from §6 or a field from a §7 approach — that is the research the depth asked for.
@@ -338,7 +338,7 @@ If `docs/CONTEXT.md` changed, include it in the same commit.
 
 Then print the handoff block per [`../_shared/handoff.md`](../_shared/handoff.md): *What I did* · *Review before continuing* (the brief, `docs/CONTEXT.md` if changed) · *Run next*:
 - feature mode: `/write-prd <slug>` (if `write-prd` is not yet in `.claude/skills/`, say it must be copied from the course toolkit first). `feature_size` is not set at this stage; do not report a default size — `write-prd` establishes it.
-- product mode: `/roadmap` to place "Складові продукту" into Now / Next / Later, then `/map-architecture` for the foundation, then `/interview <first slug>`. Name the skills that are not yet in `.claude/skills/`.
+- product mode: `/map-architecture` (role T) to fix the foundation and name the technical dependencies between capabilities, then `/roadmap` (role P) to order them, then `/interview <first slug>`. Name the skills that are not yet in `.claude/skills/`.
 
 If the recommendation looks like a hard-to-reverse technical choice, note it in §14 Open questions. Do not open an ADR here.
 
@@ -359,7 +359,7 @@ If the recommendation looks like a hard-to-reverse technical choice, note it in 
 - **Inventing competitors.** `N/A — <reason>` is better than fake research. Rows need real URLs, features and value ratings.
 - **Scoring instead of arguing.** No RICE, no made-up numbers for a one-user product. §4 says in words why this is next.
 - **Implementation terms in the brief body** (stack names, index types, embeddings as a storage choice, latency targets). This is a product brief. Tech lives in the PRD NFRs, `sad.md` and ADRs.
-- **Hardcoding the term list in this skill.** The denylist comes from `CLAUDE.md` → `## Stack`, the allowlist from `docs/CONTEXT.md` and `docs/initial-idea/`. Update those, not this file.
+- **Hardcoding the term list in this skill.** The denylist comes from `docs/architecture-map.md` or the `map-architecture` candidate table, the allowlist from `docs/CONTEXT.md` and `docs/initial-idea/`. Update those, not this file.
 - **One approach in §7.** Always three (Simplicity / Differentiation / Balanced).
 - **Skipping the multi-perspective review.** All three lenses are needed.
 - **Devil's advocate in the same context.** Phase 8 must use a clean-context agent.
@@ -387,7 +387,7 @@ If the recommendation looks like a hard-to-reverse technical choice, note it in 
 > **User:** "/interview web-page-slice"
 >
 > **— Read-only —**
-> 1. **Phase 0** — reads the template, `second-brain.md`, Epic 1 of the plan, the `## Stack` list from `CLAUDE.md`; no `docs/CONTEXT.md` yet.
+> 1. **Phase 0** — reads the template, `second-brain.md`, Epic 1 of the plan, the candidate table of `map-architecture`; no `docs/CONTEXT.md` yet.
 > 2. **Phase 0.25** — depth question; user picks medium.
 > 3. **Phase 1** — offers Epic 1's text as an option; user rewrites it in their own words; stored verbatim.
 > 4. **Phase 2** — batch 1: "Яку сторінку ти зберігаєш найчастіше і як потім шукаєш?", "Що означає «знайшов» — за скільки секунд?"; batch 2: constraints and fit.

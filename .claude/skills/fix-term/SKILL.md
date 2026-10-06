@@ -27,7 +27,7 @@ This is a capture utility, not a Socratic stage. The one shared dependency is qu
 
 ## Owner
 
-Whoever spots the ambiguity. In this project: the solo developer.
+Whoever spots the ambiguity. In this project: the developer, in whichever role (P or T) found the term.
 
 ## Inputs
 

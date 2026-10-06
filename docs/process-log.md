@@ -66,3 +66,29 @@ Format:
 **Why:** the user asked for it after the first product interview. Product docs and UI are Ukrainian, so the Ukrainian word and its exact meaning must be fixed in the same place as the English term; otherwise each brief and PRD translates the definition again and the meanings drift. The English line stays canonical for code and technical docs.
 **Rejected:** a separate Ukrainian glossary file (two documents in two languages drift; breaks the `CLAUDE.md` rule); only the Ukrainian word in `(UI: «…»)` (names the word but not its meaning or boundary).
 **Lives in:** `fix-term` (Language, step 7 entry format, template), `interview` Phase 3 and 12, `CLAUDE.md` → Language requirements (one exception to "never two languages"), `docs/CONTEXT.md`.
+
+
+## 2026-10-07 — Two roles, P and T; one owner per stage; the draft plan is a candidate, not a rule
+**Why:** the first `/roadmap` run took its order from `docs/initial-idea/second-brain-plan.md` and `CLAUDE.md` carried the plan's stack and schema as rules. Neither had been worked through: the idea went through `interview`, the plan went through nothing. The plan mixes "what" (epics, scope — P) and "how" (stack, queue, chunk structure — T). Now P decides what, T decides how; each stage has one owner, the other role only supplies input; every `AskUserQuestion` names its role. The plan is split by role: its P parts are candidates for `roadmap` and `interview <slug>`, its T parts are candidates for `map-architecture`. `CLAUDE.md` keeps only decided things (language, process, git); "Stack (planned)" became "Stack candidates (not decided)" and "Rules that must hold" was removed (they are T candidates for ADRs).
+**Rejected:** keeping the plan as the default order "to save questions" (silently converts a draft into a decision); splitting T into architect / tech lead / developer (one person, no value in the distinction now).
+**Lives in:** `CLAUDE.md` → Two roles, Stack candidates, SDLC toolkit (levels); `_shared/ask-style.md` → Role; `roadmap` Inputs + step 2a; `map-architecture` Inputs.
+
+## 2026-10-07 — Stage order after the product brief: map-architecture (T) → roadmap (P) → scaffold → features
+**Why:** the course runs `map-architecture` first (step 0); the previous adaptation put `roadmap` before it. P cannot order capabilities without knowing which technically depend on which, and that is T's knowledge. So T fixes the foundation and writes a "Capability dependencies" table; P then orders Next at each branching point with that table as the only constraint.
+**Rejected:** roadmap first with "obvious" dependencies guessed by Claude (that is how the plan leaked in); merging roadmap into map-architecture (mixes the roles in one session).
+**Lives in:** `CLAUDE.md` → levels; `_shared/handoff.md` table; `interview` Phase 14; `roadmap` step 2a and step 7; `map-architecture` G5, G8.
+
+## 2026-10-07 — `map-architecture` copied: candidates instead of menus, §14 questions, dependency table, no commit
+**Why:** the course greenfield path picks a stack from generic menus and asks "what is this project" (G3). Deja has a brief and candidates, so the session confirms or replaces each candidate with real alternatives, skips the intent question, answers the brief's §14 items due at this stage, and adds the dependency table `roadmap` needs. The `explorer` agent is replaced by the built-in `Explore` agent. The scaffold has no CI task (no remote); one local check command is the CI. The MADR ADR template now lives in this skill (`templates/adr-template.md`); `architecture-design` and `decide-adr` must reuse it when copied.
+**Rejected:** copying as-is and overriding in conversation (the protocol would still say "pick from the menu"); a separate `foundation` skill (the course's single-file map is what downstream skills expect).
+**Lives in:** `.claude/skills/map-architecture/`, `_shared/mermaid-check.md`.
+
+## 2026-10-07 — Skills propose commits; they never run `git commit`
+**Why:** the roadmap run committed right after writing the file, before the user had seen it. The rule was already in the handoff ("the user says commit") but not in the skills. Now every skill prints the proposed message and stops; new product documents are shown in the reply before they are written.
+**Rejected:** a git hook blocking commits from Claude (the user also wants Claude to commit on request).
+**Lives in:** `_shared/handoff.md` → Rules; `roadmap` step 7; `map-architecture` G8 + Anti-patterns; `CLAUDE.md` → SDLC toolkit.
+
+## 2026-10-07 — `CLAUDE.md` keeps only lasting rules; process moved to `docs/sdlc-skills.md`; assumptions tagged
+**Why:** `CLAUDE.md` had grown into a description of the planning phase (stage list, adopted skills, stack candidates). Those go stale when development starts. Now it holds what stays true: sources of truth, the two roles, language rules, git workflow, commands, and an **Assumptions** block with tags (`[assume:remote=none]`, `[assume:users=one]`). Skills branch on the tags instead of restating «no remote» or «one user»; changing an assumption is one line plus a grep. Stack candidates moved to `map-architecture/references/foundation.md`, the only place they are used.
+**Rejected:** leaving the stage list in `CLAUDE.md` «until development starts» (nobody remembers to remove it); a separate `docs/assumptions.md` (one more file to forget; `CLAUDE.md` is read every session).
+**Lives in:** `CLAUDE.md`; `docs/sdlc-skills.md` → Source / Adoption rules / Stages / Adopted so far; the `[assume:…]` tags in `roadmap`, `map-architecture`, `interview`, `_shared/handoff.md`.

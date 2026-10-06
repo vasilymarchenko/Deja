@@ -18,18 +18,19 @@ The **portfolio layer** above the per-feature pipeline. The pipeline builds one 
 
 A roadmap is **direction, not a promise**, and **not a release plan**: feature-and-date roadmaps project false certainty, go stale fastest the further out they reach, and commit to solutions before discovery. So this roadmap encodes *decreasing certainty over time* and never carries dates. Repo-level utility — one file serves the whole repo.
 
-Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/roadmap`). Changes for Deja: **no RICE** (one user — Reach is always 1, the score ranks nothing; the order inside Next is argued in one line per row instead); the first run is seeded from the product brief's "Складові продукту"; the file is Ukrainian (product doc, see `CLAUDE.md` → Language requirements); no PR links in Shipped (no PRs in this repo — link the changelog entry).
+Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/roadmap`). Changes for Deja: **no RICE** (`[assume:users=one]` in `CLAUDE.md` — Reach is always 1, the score ranks nothing; the order inside Next is argued in one line per row instead); the first run is seeded from the product brief's "Складові продукту" and runs **after** `map-architecture`, so T's dependencies are known; the order is decided by P at each branching point, never taken from the draft plan; the file is Ukrainian (product doc, see `CLAUDE.md` → Language requirements); Shipped links the changelog entry, and a PR only when `[assume:remote=none]` in `CLAUDE.md` no longer holds.
 
 ## Owner
 
-Whoever owns product direction. In this project: the solo developer.
+Role **P** (product). T supplies one input only: the technical dependencies between capabilities, from `docs/architecture-map.md`. Every `AskUserQuestion` starts with «P:» per [`../_shared/ask-style.md`](../_shared/ask-style.md) → Role.
 
 ## Inputs
 
 - (Optional) a candidate to capture (an outcome / problem in one line), or an action: prioritize / promote / demote / render.
 - `docs/idea-brief.md` — the product brief; its "Складові продукту" and "Фундамент і експлуатація" tables seed the board on the first run.
 - `docs/features/*/` — to link items to existing feature folders and read their status.
-- `docs/initial-idea/second-brain-plan.md` — the plan's vertical-slice order is the default order of Next on the first run.
+- `docs/architecture-map.md` → its dependency section: which capability technically needs which other one first. The only hard constraint on the order. If the map is absent, say so and ask the user to run `/map-architecture` first; do not guess dependencies and do not take them from the draft plan.
+- `docs/initial-idea/second-brain-plan.md` — a draft. Its epic order is **one candidate** P may pick, never the default.
 
 ## Language
 
@@ -38,7 +39,8 @@ Whoever owns product direction. In this project: the solo developer.
 ## Protocol
 
 1. **Lazy-create.** If `docs/roadmap.md` is absent, copy [`./templates/roadmap.md`](./templates/roadmap.md) there (the non-commitment disclaimer + Now / Next / Later / Shipped + Фундамент, **each rendered as a table**, one row per item).
-2. **Seed from the product brief (first run only).** If `docs/idea-brief.md` exists and the board is empty: every row of "Складові продукту" becomes a Next or Later row (outcome = the row's user outcome; slug in the row); every row of "Фундамент і експлуатація" goes to the **Фундамент** table with its destination (`map-architecture`, ADR, task). Propose the split and the Next order (default: the plan's vertical-slice order — the first capability that closes "зберіг → знайшов" first) in one `AskUserQuestion`; the user confirms or reorders. If there is no product brief, say so and build from the user's candidate.
+2. **Seed from the product brief (first run only).** If `docs/idea-brief.md` exists and the board is empty: every row of "Складові продукту" becomes a Next or Later row (outcome = the row's user outcome; slug in the row); every row of "Фундамент і експлуатація" goes to the **Фундамент** table with its destination (`map-architecture`, ADR, task). Propose the Next / Later split in one `AskUserQuestion`. If there is no product brief, say so and build from the user's candidate.
+2a. **Order Next with P, one branching point at a time (first run only).** Read the dependencies from `docs/architecture-map.md` and print them as a short list ("X needs Y first"). Then walk the order: wherever two or more capabilities could go next without breaking a dependency, ask P which one and why — one `AskUserQuestion` per branching point, with the trade-off in words (what each choice unlocks, what it delays, which brief risk it tests). The P answer becomes that row's "чому в цьому порядку" line, in P's words. The draft plan's order may be offered as one option with its reasoning spelled out; it is never the silent default. Before writing, print the full ordered table in the reply and wait for "ok" or edits.
 3. **The three horizons — the content type changes per horizon** (the load-bearing rule):
    - **Now** — committed work whose `docs/features/<slug>/PRD.md` exists and is being built. Row = outcome one-liner + link to the feature folder + status (designing / implementing / review). Promoted here only after `write-prd`.
    - **Next** — problems / opportunities deliberately **not yet spec'd**. Row = outcome one-liner + the intended slug + one line "чому в цьому порядку". No feature folder yet. Ordered by the owner, top = next to pull.
@@ -47,7 +49,7 @@ Whoever owns product direction. In this project: the solo developer.
 4. **Capture a candidate** → add to **Next** (or Later) as an outcome / problem. **Never** write a solution or feature detail here — that is `write-prd`'s job when the item is pulled into Now.
 5. **Prioritize.** Order Next by hand. Each row carries one line of reasoning (dependency on an earlier slice, unlocks dogfooding, biggest gap from the product brief §6). Changing the order = changing the line.
 6. **Promote / demote.** Move rows between horizons as certainty changes. Promote Next → Now only when the item is about to be `write-prd`'d. Demote freely; far-out items stay coarse.
-7. **Render / write + commit + handoff.** Update `docs/roadmap.md`, set `updated_at`, propose commit `Update roadmap: <what changed>` (first run: `Add roadmap`). Then emit the stage-handoff block per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant) — *What I did* + *Review* (`docs/roadmap.md`) + *Run next*: after the first run `/map-architecture` (say it must be copied from the course toolkit if absent), otherwise resume your backbone stage; `/clear` optional.
+7. **Render / write + propose commit + handoff.** Update `docs/roadmap.md`, set `updated_at`, print the proposed commit message `Update roadmap: <what changed>` (first run: `Add roadmap`). Do not run `git commit`; the user does. Then emit the stage-handoff block per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant) — *What I did* + *Review* (`docs/roadmap.md`) + *Run next*: after the first run `/implement-tasks _scaffold` (the skeleton from `map-architecture`), then `/interview <first slug>`; otherwise resume your backbone stage; `/clear` optional.
 
 ## Sync hooks (delivery keeps it current)
 
@@ -68,6 +70,8 @@ Whoever owns product direction. In this project: the solo developer.
 - **Over-detailing Later.** Far-out rows are directional one-liners.
 - **Promoting to Now before `write-prd`.** Now = committed + spec'd.
 - **Infrastructure as a Next row.** Skeleton, queue, backups go to Фундамент.
+- **Taking the order from the draft plan.** The plan is a candidate; the order is P's decision, argued at each branching point.
+- **Inventing dependencies.** Only T's map states them. No map — no first run.
 - **Letting it rot.** `write-prd` / `ship-feature` keep it live.
 
 ## Template

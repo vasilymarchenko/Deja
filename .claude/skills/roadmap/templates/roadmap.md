@@ -25,7 +25,7 @@ No PRD detail — link, don't duplicate. write-prd promotes a row here; ship-fea
 <!-- instruction: the ordered candidate pool. Each row is an OUTCOME / PROBLEM, not a solution, and has
 NO feature folder yet (it gets one when pulled into Now via write-prd). Hand-ordered, top = next to pull.
 One line of reasoning per row; no scores, no dates. First run: seeded from docs/idea-brief.md
-"Складові продукту" in the plan's vertical-slice order. -->
+"Складові продукту"; order decided by P at each branching point, constrained only by the dependencies in docs/architecture-map.md. -->
 
 | Результат / проблема | Майбутній slug | Чому в цьому порядку |
 |---|---|---|
