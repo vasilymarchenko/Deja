@@ -9,15 +9,37 @@ description: >-
   docs/features/<slug>/idea-brief.md (14 sections, Ukrainian). Triggers on
   "/interview <slug>", "raw idea", "capture an idea", "interview a feature", "brief for X",
   "idea brief", "new feature X", "ideation for <slug>", "start epic N", "інтерв'ю фічі",
-  "бриф ідеї", "нова фіча". Next stage: write-prd. Does not write ADRs — that is
+  "бриф ідеї", "нова фіча". Two modes: "/interview product" writes the product-level brief
+  docs/idea-brief.md (next stage: roadmap); "/interview <slug>" writes a feature brief
+  under docs/features/<slug>/ (next stage: write-prd). Does not write ADRs — that is
   architecture-design.
 ---
 
 # Skill: interview (SDLC ideation phase)
 
-One autonomous, Claude-driven protocol for the ideation phase. Output: a single `docs/features/<slug>/idea-brief.md` with 14 sections. No separate brainstorm or initiatives files.
+One autonomous, Claude-driven protocol for the ideation phase. Output: one idea-brief with 14 sections — `docs/idea-brief.md` in **product mode**, `docs/features/<slug>/idea-brief.md` in **feature mode**. No separate brainstorm or initiatives files.
 
-Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/interview`). Changes for Deja: no greenfield mode (the repo exists), agents are local (`.claude/agents/`), the glossary is `docs/CONTEXT.md`, the brief is written in Ukrainian, **no RICE** (a solo product with one user — Reach is always 1, the score ranks nothing; priority is argued in §4 "Чому зараз"), glossary terms are confirmed in the plan phase and written without `fix-term` questions, the tech-term check is derived from living docs instead of a hardcoded word list.
+Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/interview`). Changes for Deja: the course greenfield mode (auto-detected by an empty folder, hands off to `scaffold`) is replaced by an explicit **product mode** that works in the existing repo and hands off to `roadmap`; agents are local (`.claude/agents/`); the glossary is `docs/CONTEXT.md`; the brief is written in Ukrainian; **no RICE** (a solo product with one user — Reach is always 1, the score ranks nothing; priority is argued in §4 and in roadmap order); glossary terms are confirmed in the plan phase and written without `fix-term` questions; the tech-term check is derived from living docs instead of a hardcoded word list.
+
+## Two modes
+
+| | Product mode | Feature mode |
+|---|---|---|
+| Call | `/interview product` | `/interview <slug>` |
+| Subject | the whole product: what Deja is and is not | one capability of the product |
+| §1 input | `docs/initial-idea/second-brain.md`, offered verbatim | the epic text from `docs/initial-idea/second-brain-plan.md`, or the user's paragraph |
+| Output | `docs/idea-brief.md` | `docs/features/<slug>/idea-brief.md` |
+| Extra section | **"Складові продукту"** — the capability list that becomes the roadmap and the feature slugs | — |
+| §4 heading | "Чому цей продукт" | "Чому зараз" |
+| Phase 4 research | full market scan (default depth `hard`) | delta only: what the product brief §6 does not cover |
+| Phase 6 lenses | judge the product approaches | judge the feature approaches; do not repeat product-level conclusions |
+| Phase 8 devil's advocate | attacks the product thesis ("search by why I saved it") | attacks the feature |
+| Phase 10 Feasibility | no repo scan; based on `CLAUDE.md` stack and the user's skills and time | repo scan + planned stack |
+| Handoff | `/roadmap` | `/write-prd <slug>` |
+
+**Mode detection.** The slug `product` selects product mode. Anything else is feature mode. There is no auto-detect: the repo exists, so the course's empty-folder rule would never fire.
+
+**Feature mode reads the product brief.** If `docs/idea-brief.md` exists, Phase 0 loads it. Its §6 table, §8 lenses, §10 risks and "Складові продукту" are upstream context for every agent prompt; the feature brief links it under "Пов'язане" and cites it instead of repeating it. If it does not exist, say so once and run the full protocol — do not block. The product brief is recommended before the first feature, not required.
 
 ## Why one skill
 
@@ -31,13 +53,14 @@ The idea author. In this project: the solo developer (Vasyl), who is also PM and
 
 - "capture an idea <slug>", "brief for <feature>", "raw idea for <feature>", "ideation for <slug>".
 - Starting an epic from `docs/initial-idea/second-brain-plan.md` ("start epic 1").
-- `/interview <slug>` as the explicit call.
-- Skip if `docs/features/<slug>/idea-brief.md` already exists with `status: Confirmed` and is fresh (≤2 weeks). Update it instead of rewriting.
+- `/interview <slug>` as the explicit call; `/interview product` for the product-level brief.
+- Skip if the target brief already exists with `status: Confirmed` and is fresh (≤2 weeks). Update it instead of rewriting.
 
 ## Inputs
 
-- `<slug>` — kebab-case, short, no epic number (`web-page-slice`, `chrome-extension`). If missing, suggest 2–3 options from the idea.
-- Product context (always read): `docs/initial-idea/second-brain.md`, `docs/initial-idea/second-brain-plan.md` (the matching epic), `CLAUDE.md`.
+- `<slug>` — `product`, or kebab-case, short, no epic number (`web-page-slice`, `chrome-extension`). If missing, suggest 2–3 options from the idea; prefer a slug from the product brief's "Складові продукту" when it exists.
+- Product context (always read): `docs/initial-idea/second-brain.md`, `docs/initial-idea/second-brain-plan.md` (the matching epic in feature mode; the whole plan in product mode), `CLAUDE.md`.
+- Feature mode: `docs/idea-brief.md` (the product brief) if present.
 - Optional: `docs/roadmap.md`, `docs/architecture-map.md`, `docs/CONTEXT.md`, prior notes or links from the user.
 
 ## Language
@@ -67,8 +90,8 @@ The brief describes **what the user gets**, never **how we build it**. There is 
 The first `AskUserQuestion` of every run picks the depth. It is written to the brief frontmatter (`depth:`).
 
 - **easy** — 3–4 checkpoints. Phase 1 (idea); Phase 2 as one batch (2–3 questions: user and pain · success criterion · scope); Phases 3, 10 and 11 merged into one final confirm (glossary terms + Feasibility + recommendation together). Phases 4–8 run by Claude itself, without agents: 1–2 quick searches for §6, three one-paragraph approaches, its own list of 3–5 risks. All 14 sections are filled, but compactly.
-- **medium** (default) — the full protocol below.
-- **hard** — the full protocol + one extra Socratic batch in Phase 2 + a wider §6 (5+ competitors).
+- **medium** (default in feature mode) — the full protocol below.
+- **hard** (default in product mode) — the full protocol + one extra Socratic batch in Phase 2 + a wider §6 (5+ competitors).
 
 Easy does not relax honesty: its 3–4 `AskUserQuestion` calls are real. Fabricating answers is forbidden at every depth.
 
@@ -79,6 +102,7 @@ Easy does not relax honesty: its 3–4 `AskUserQuestion` calls are real. Fabrica
 | easy | ≤ 1500 | compact run, no agent output |
 | medium | ≤ 2500 | full table of 3–5 competitors, three approaches, three lenses |
 | hard | ≤ 3500 | 5+ competitors, extra Socratic batch |
+| product mode, any depth | +500 | the "Складові продукту" table |
 
 The budget scales with the content the depth produces; a fixed page count would force cutting exactly the research the depth asked for.
 
@@ -134,6 +158,7 @@ Phase numbers and brief section numbers differ. Use this table when a phase says
 | 10 | §11 Feasibility |
 | 11 | §12 Рекомендація · §13 Відкладені підходи |
 | 7, 8, 13 | §14 Відкриті питання |
+| 11 (product mode) | "Складові продукту" — derived from the recommended approach |
 
 ## Protocol
 
@@ -142,10 +167,11 @@ Phase numbers and brief section numbers differ. Use this table when a phase says
 ### 0. Pre-plan setup (read-only)
 
 - **Read** `./templates/idea-brief.md` into session memory. Do not copy it yet.
-- **Read** product context: `docs/initial-idea/second-brain.md`, the matching epic in `docs/initial-idea/second-brain-plan.md`, and `docs/roadmap.md` / `docs/architecture-map.md` if present.
+- **Read** product context: `docs/initial-idea/second-brain.md`, `docs/initial-idea/second-brain-plan.md` (the matching epic; in product mode the whole plan — its epics are candidate capabilities), and `docs/roadmap.md` / `docs/architecture-map.md` if present.
+- **Feature mode:** read `docs/idea-brief.md` if present; keep its §6, §8, §10 and "Складові продукту" as upstream context. Note which row of "Складові продукту" this feature is.
 - **Read** `CLAUDE.md` → `## Stack`; keep the list of names as the session denylist for Phase 13.
 - **Read** `docs/CONTEXT.md` if it exists; keep `## Glossary` as session state (allowlist for Phase 13, conflict check for Phase 3).
-- **Check** `docs/features/<slug>/idea-brief.md`. If it exists with `status: Confirmed` and is ≤2 weeks old, stop and offer an update instead.
+- **Check** the target brief (`docs/idea-brief.md` or `docs/features/<slug>/idea-brief.md`). If it exists with `status: Confirmed` and is ≤2 weeks old, stop and offer an update instead.
 - **No Write / Edit / mkdir.**
 
 ### 0.25. Depth checkpoint (AskUserQuestion — mandatory)
@@ -154,7 +180,7 @@ One question: the depth (see "Depth regulator"). Confirm the slug in the same ca
 
 ### 1. Idea capture (AskUserQuestion — mandatory)
 
-One `AskUserQuestion` for the raw paragraph: "Опиши ідею в 1–3 реченнях своїми словами." Offer the epic's text from the plan as one option, so the user can accept or rewrite it. Store the answer verbatim as §1. Do not edit it — it is the baseline.
+One `AskUserQuestion` for the raw paragraph: "Опиши ідею в 1–3 реченнях своїми словами." Offer as one option: in feature mode the epic's text from the plan; in product mode the "Одним рядком" paragraph plus "Ключова відмінність" from `second-brain.md`. The user accepts or rewrites. Store the answer verbatim as §1. Do not edit it — it is the baseline.
 
 ### 2. Socratic deep dive (AskUserQuestion — mandatory)
 
@@ -166,6 +192,8 @@ Pick 3–5 questions from 5 categories, based on the shape of the idea:
 - **Strategic fit** — how it fits the plan and the product goal ("find by why I saved it").
 
 Ask in batches of 2–3, not all at once. Do not ask what the product docs already answer; cite them instead and ask only for gaps or contradictions.
+
+Product mode: `second-brain.md` already answers most of "problem" and "for whom". Spend the questions on what it does not say: what the user tried before and why it failed, what "7 of 10" is measured against, what would make them abandon the product, and which parts of "Межі v1" are product decisions versus implementation habits.
 
 ### 3. Glossary confirmation (AskUserQuestion — mandatory when there are terms)
 
@@ -188,11 +216,13 @@ At **easy** depth this batch is merged into the final confirm (Phases 10–11).
 
 Dispatch `researcher`. Prompt inlines: raw idea, deep-dive answers, `docs/CONTEXT.md` path, and the depth (medium: 3–5 rows; hard: 5+ rows). It returns a table **Product · URL · Features · Value (1–5) · Gap**, every row footnoted with date and search query, plus one synthesis line (the biggest gap). Store it as the §6 draft.
 
+Feature mode with a product brief: inline the product §6 table and ask for the **delta** only — competitors or adjacent solutions specific to this capability that the product table does not cover. The feature §6 holds the delta rows plus one line "see product brief §6 for the market scan". Product mode: this is the full market scan; it is the one place the money on research is spent.
+
 No user input here. If the agent reports `RESEARCH_LIMITED`, keep that note in §6; never invent rows.
 
 ### 5. Strategic approaches (`strategist` agent, read-only)
 
-Dispatch `strategist`. Prompt inlines: raw idea, deep-dive answers, the §6 synthesis line. It returns three genuinely different approaches:
+Dispatch `strategist`. Prompt inlines: raw idea, deep-dive answers, the §6 synthesis line (feature mode: plus the product brief's recommended approach, so the feature approaches stay inside the product's chosen direction). It returns three genuinely different approaches:
 - **A — Simplicity:** the shortest path, MVP, fewest moving parts.
 - **B — Differentiation:** the wow-factor / moat / unique angle.
 - **C — Balanced:** the trade-off between A and B.
@@ -201,7 +231,7 @@ Each has **Name** (3–5 words) · **Thesis** (1 sentence, product language, no 
 
 ### 6. Multi-perspective review (`analyst` agent, read-only)
 
-Dispatch `analyst`. Prompt inlines: raw idea + the three approaches from Phase 5. It returns, for each lens (**Engineer** — abstract, no library or DB names; **Executive**; **UX**), 3–5 bullets across the approaches, then the 3×3 matrix (+/0/−, ≤6-word reason per cell) and one synthesis line per approach. Store as the §8 draft.
+Dispatch `analyst`. Prompt inlines: raw idea + the three approaches from Phase 5 (feature mode: plus the product §8 synthesis lines, with the instruction not to repeat product-level conclusions). It returns, for each lens (**Engineer** — abstract, no library or DB names; **Executive**; **UX**), 3–5 bullets across the approaches, then the 3×3 matrix (+/0/−, ≤6-word reason per cell) and one synthesis line per approach. Store as the §8 draft.
 
 ### 7. Trade-offs + edge cases (synthesis, read-only)
 
@@ -213,6 +243,8 @@ Claude writes into session memory (no user input):
 
 Dispatch `devils-advocate`. The prompt says: **"Mode B — no PRD yet"** and inlines the raw idea + the three approaches (mark the leading one, if any). Do not inline Claude's own optimism (trade-offs, matrix). It returns 5–10 attack vectors with trigger / breaks / signal.
 
+Product mode: the target is the product thesis itself — "search by why I saved it" beats search by text; one user's dogfooding is enough to tune it; the capture habit survives six months. Feature mode: the target is the feature; inline the product §10 so the agent does not re-report product-level risks.
+
 The sharpest vector goes to §10 Risks. The rest feed §9 Edge cases.
 
 ### 9. (removed) RICE
@@ -221,7 +253,9 @@ Not used in Deja. Priority is argued in prose in §4 "Чому зараз" (what
 
 ### 10. Claude-proposed Feasibility (read-only repo scan + AskUserQuestion — mandatory)
 
-Scan the repo read-only (`Glob` / `Grep` over `backend/`, `extension/`, `deploy/`, `docs/features/`, `docs/architecture-map.md`) for adjacent shipped features with similar tech or workflow. Early in the project there may be none — say so plainly and base the estimate on the planned stack in `CLAUDE.md` and on the user's answers, not on invented precedent.
+Feature mode: scan the repo read-only (`Glob` / `Grep` over `backend/`, `extension/`, `deploy/`, `docs/features/`, `docs/architecture-map.md`) for adjacent shipped features with similar tech or workflow. Early in the project there may be none — say so plainly and base the estimate on the planned stack in `CLAUDE.md` and on the user's answers, not on invented precedent.
+
+Product mode: no repo scan — there is nothing to scan and the product is not "feasible" the way a feature is. Base the three checkboxes on the planned stack in `CLAUDE.md`, the user's skills from Phase 2, and the plan's total estimate; **Time** compares the plan's total (10–11 weeks) with the user's real weekly capacity.
 
 Propose 3 checkboxes, each with a rationale:
 - **Tech** ☑/☐ — "similar to <feature> in <module>" or "planned stack covers it: <reason>". The rationale in the brief stays product-level ("the planned storage already supports this kind of search"); stack names from the scan stay in session memory.
@@ -240,14 +274,16 @@ Claude picks one of the three approaches and writes a 3–5 sentence rationale. 
 
 Ask: accept the recommendation / pick a different approach / mark as TBD.
 
+**Product mode adds "Складові продукту".** From the accepted approach, Claude derives the capability list: one row per capability — name (the future feature slug, kebab-case), the user outcome in one sentence, the "Межі v1" boundary it belongs to, and the plan epic it comes from (or "new", if the approach added it; or a note if the approach dropped an epic). Capabilities that are infrastructure, not user outcomes (the skeleton, the job queue as such, backups, monitoring) are listed in a second short table "Фундамент і експлуатація" with the note that they go to `map-architecture` and ADRs, not to feature briefs. Confirm the list in the same `AskUserQuestion` as the recommendation, or in one more call if it is long (accept / edit rows / drop rows).
+
 At **easy** depth, Phases 3, 10 and 11 are one `AskUserQuestion` call.
 
 ### 11.5. ExitPlanMode handoff (plan → execute)
 
 Everything above lives in session memory. Now call `ExitPlanMode` with a plan:
 
-1. Create `docs/features/<slug>/` if absent.
-2. Copy `./templates/idea-brief.md` → `docs/features/<slug>/idea-brief.md`.
+1. Feature mode: create `docs/features/<slug>/` if absent. Product mode: target is `docs/idea-brief.md`.
+2. Copy `./templates/idea-brief.md` → the target path.
 3. Append `pending_glossary_lines` to `docs/CONTEXT.md` (bootstrap it from the `fix-term` template if missing).
 4. Fill the 14 sections + Related + DoD self-check from session memory (Phases 1–11), in Ukrainian.
 5. Set frontmatter: `status: Confirmed`, `feasibility_state: confirmed`, `depth`, `updated_at`.
@@ -258,8 +294,8 @@ If `ExitPlanMode` is unavailable, skip this step and go to Phase 12.
 
 ### 12. Execute: write the brief (no questions)
 
-- `mkdir` `docs/features/<slug>/` if absent.
-- Copy the template → `docs/features/<slug>/idea-brief.md`.
+- Feature mode: `mkdir` `docs/features/<slug>/` if absent. Product mode: no folder.
+- Copy the template → the target path. Product mode: rename §4 to "Чому цей продукт", fill the "Складові продукту" block (it is in the template as an HTML-commented block; uncomment it), set `epic: product`, `feature_size: n/a`. Feature mode: delete the "Складові продукту" block, keep `feature_size` as a placeholder.
 - **Glossary.** If `pending_glossary_lines` is non-empty: if `docs/CONTEXT.md` is missing, copy `.claude/skills/fix-term/templates/CONTEXT.md` there and prune empty H2s except `## Glossary`. Append each line under `## Glossary` (alphabetically if the section is sorted, else at the end). Never rewrite existing entries. Set `updated_at: <today>`. This is the `fix-term` file protocol (steps 3, 7–10) applied without its questions, because the questions already ran in Phase 3.
 - Fill sections 1–14 + Related + DoD self-check. Remove template HTML comments that only instruct the filler; keep the `Why:` comment. Frontmatter:
   - `status: Confirmed`
@@ -272,7 +308,8 @@ Parked approaches (the 2 not recommended) go to §13 with a reason and a revisit
 ### 13. Self-check vs DoD
 
 Run all checks (Read + Grep over the written file):
-- **14 sections present** — 1–14 + Related + DoD self-check filled.
+- **14 sections present** — 1–14 + Related + DoD self-check filled (product mode: plus "Складові продукту" with ≥1 row per epic of the plan, or an explicit "dropped" note).
+- **Product brief linked** — feature mode with `docs/idea-brief.md` present: "Пов'язане" links it and names the "Складові продукту" row.
 - **No implementation terms in the body.** Build the check at run time, excluding frontmatter and HTML comments:
   1. Grep for every name from the Phase 0 denylist (`CLAUDE.md` → `## Stack`), word boundaries on. Any hit → rewrite the sentence in product language.
   2. Grep for numeric engineering targets (`ms`, `p9\d`, `dims?`, `SLO`, `QPS`). Any hit → move to §14 Open questions as "for the PRD".
@@ -291,15 +328,19 @@ Suggest (do not run) a commit, in the project style — short imperative subject
 Add idea-brief for <slug>
 ```
 
+Product mode: `Add product idea-brief`.
+
 If `docs/CONTEXT.md` changed, include it in the same commit.
 
-Then print the handoff block per [`../_shared/handoff.md`](../_shared/handoff.md): *What I did* · *Review before continuing* (`docs/features/<slug>/idea-brief.md`, `docs/CONTEXT.md` if changed) · *Run next* = `/write-prd <slug>` (if `write-prd` is not yet in `.claude/skills/`, say it must be copied from the course toolkit first). `feature_size` is not set at this stage; do not report a default size — `write-prd` establishes it.
+Then print the handoff block per [`../_shared/handoff.md`](../_shared/handoff.md): *What I did* · *Review before continuing* (the brief, `docs/CONTEXT.md` if changed) · *Run next*:
+- feature mode: `/write-prd <slug>` (if `write-prd` is not yet in `.claude/skills/`, say it must be copied from the course toolkit first). `feature_size` is not set at this stage; do not report a default size — `write-prd` establishes it.
+- product mode: `/roadmap` to place "Складові продукту" into Now / Next / Later, then `/map-architecture` for the foundation, then `/interview <first slug>`. Name the skills that are not yet in `.claude/skills/`.
 
 If the recommendation looks like a hard-to-reverse technical choice, note it in §14 Open questions. Do not open an ADR here.
 
 ## Definition of Done
 
-- `docs/features/<slug>/idea-brief.md` created, in Ukrainian; commit proposed.
+- The brief created at the mode's path, in Ukrainian; commit proposed. Product mode: "Складові продукту" filled and confirmed.
 - All 14 sections filled (no empty H2; `<!-- TBD: ... -->` allowed where honestly missing).
 - No implementation terms in the body (Phase 13 check: Stack denylist, numeric targets, grey-zone batch resolved).
 - Body within the word budget of the chosen depth.
@@ -329,6 +370,9 @@ If the recommendation looks like a hard-to-reverse technical choice, note it in 
 - **Fabricating answers under Auto Mode.**
 - **Writing files before Phase 12.**
 - **Cutting research to fit a length.** Shorten synthesis (§8, §9), not evidence (§6, §7).
+- **Feature brief that repeats the product brief.** With `docs/idea-brief.md` present, §6 and §8 hold the delta and a link, not a copy.
+- **Infrastructure in "Складові продукту".** The skeleton, queue, backups and monitoring are foundation work for `map-architecture`, not capabilities with a user outcome.
+- **Product mode without `second-brain.md` as §1.** The initial idea is the baseline; the brief adds research to it, it does not replace it.
 
 ## Template
 

@@ -3,10 +3,10 @@ status: Draft | Confirmed | Frozen
 owner: "Vasyl Marchenko"
 reviewers: []
 updated_at: "<YYYY-MM-DD>"
-feature_size: <XS|S|M|L|XL>     # set by classify-size, not here
+feature_size: <XS|S|M|L|XL>     # set by classify-size, not here; "n/a" in product mode
 stage: "01"
 depth: easy | medium | hard     # interview depth used
-epic: "<epic number from docs/initial-idea/second-brain-plan.md, or none>"
+epic: "<epic number from docs/initial-idea/second-brain-plan.md, none, or product>"
 feasibility_state: proposed | confirmed
 ---
 
@@ -33,7 +33,8 @@ feasibility_state: proposed | confirmed
 <who suffers, how often, segments>
 
 ## 4. Чому зараз
-<trigger: what in the plan or in daily use makes this the next step>
+<feature mode: what in the plan or in daily use makes this the next step.
+ product mode: rename the heading to "Чому цей продукт" — why this product and not an existing tool, why build it now>
 
 ## 5. Поза межами
 - <bullet>
@@ -119,11 +120,33 @@ feasibility_state: proposed | confirmed
 ## 14. Відкриті питання
 - [ ] <question> — відповідальний: <name>, термін: <date>
 
+<!-- PRODUCT MODE ONLY — uncomment in product mode, delete in feature mode.
+
+## Складові продукту
+<One row per capability with a user outcome. The name is the future feature slug.
+ Derived from the recommended approach in §12. Each epic of the plan appears here,
+ or is marked as dropped with a reason.>
+
+| Складова (slug) | Результат для користувача | Межа v1 | Епік плану |
+|---|---|---|---|
+| <web-page-slice> | <one sentence> | <джерела / інтерфейс / пошук> | <1 / new / dropped: reason> |
+
+### Фундамент і експлуатація
+<Work without a direct user outcome: skeleton, job queue, backups, monitoring.
+ Goes to map-architecture and ADRs, not to feature briefs.>
+
+| Робота | Епік плану | Куди йде |
+|---|---|---|
+| <skeleton and deploy> | <0> | map-architecture |
+
+-->
+
 ## Пов'язане
-- <links: docs/CONTEXT.md, epic in docs/initial-idea/second-brain-plan.md, related features>
+- <feature mode: docs/idea-brief.md (product brief) + the "Складові продукту" row this feature is; docs/CONTEXT.md; the epic in docs/initial-idea/second-brain-plan.md; related features>
+- <product mode: docs/initial-idea/second-brain.md, docs/initial-idea/second-brain-plan.md, docs/CONTEXT.md>
 
 ## DoD self-check
-- [ ] 14 розділів заповнено
+- [ ] 14 розділів заповнено (product mode: + «Складові продукту»)
 - [ ] Немає термінів реалізації (перевірка за `## Stack` у CLAUDE.md, числові цілі, сіра зона)
 - [ ] Обсяг у межах бюджету слів для обраної глибини (easy 1500 / medium 2500 / hard 3500)
 - [ ] Frontmatter status: Confirmed

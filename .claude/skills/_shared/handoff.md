@@ -66,7 +66,8 @@ Rules for filling it:
 
 | Stage | Review before continuing (files written) | Run next |
 |---|---|---|
-| `interview` | `docs/features/<slug>/idea-brief.md` (+ `docs/CONTEXT.md`) | `/write-prd <slug>` |
+| `interview product` | `docs/idea-brief.md` (+ `docs/CONTEXT.md`) | `/roadmap` → `/map-architecture` → `/interview <first slug>` |
+| `interview <slug>` | `docs/features/<slug>/idea-brief.md` (+ `docs/CONTEXT.md`) | `/write-prd <slug>` |
 | `map-architecture` | `docs/architecture-map.md` (+ scaffold `tasks.json` on greenfield) | `/write-prd <slug>` |
 | `write-prd` | `docs/features/<slug>/PRD.md` | `/clarify-prd <slug>` |
 | `clarify-prd` | `docs/features/<slug>/PRD.md` (tightened) | `/fix-term <slug>` ↳ or `/architecture-design <slug>` |
@@ -82,7 +83,7 @@ Rules for filling it:
 | `classify-size` | `.size` | resume — e.g. `/write-prd <slug>` |
 | `fix-term` | `CONTEXT.md` | resume — e.g. `/architecture-design <slug>` |
 | `decide-adr` | `adr/NNNN-<title>.md` | resume — `/break-tasks <slug>` or `/plan-tests <slug>` |
-| `roadmap` | `docs/roadmap.md` | resume your backbone stage |
+| `roadmap` | `docs/roadmap.md` | first run: `/map-architecture`; otherwise resume your backbone stage |
 
 ## Discipline
 

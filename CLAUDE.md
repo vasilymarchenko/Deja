@@ -2,7 +2,7 @@
 
 Personal "second brain": save pages, repos, posts, videos and own ideas with one click; find them later with one natural-language question. Search is by *why I saved it*, not only by text.
 
-Product and plan (Ukrainian): `docs/initial-idea/second-brain.md`, `docs/initial-idea/second-brain-plan.md`. Read them before designing anything.
+Product and plan (Ukrainian): `docs/initial-idea/second-brain.md`, `docs/initial-idea/second-brain-plan.md` — the raw initial idea, never edited. Once they exist, the canonical sources are `docs/idea-brief.md` (product brief), `docs/roadmap.md` (order of work) and `docs/architecture-map.md` (foundation). Read whichever exist before designing anything.
 
 This is a learning project for an agentic engineering course. The process follows the course SDLC toolkit (see below).
 
@@ -17,13 +17,15 @@ This is a learning project for an agentic engineering course. The process follow
 
 ## Layout (target)
 
-- `docs/initial-idea/` — original product idea and plan
+- `docs/initial-idea/` — original product idea and plan (raw input, read-only)
+- `docs/idea-brief.md` — product-level brief from `/interview product`; its «Складові продукту» table is the feature list
 - `docs/architecture-map.md` — codebase survey, written once, read by every stage
 - `docs/roadmap.md` — Now / Next / Later / Shipped
 - `docs/features/<slug>/` — all artifacts of one feature (idea-brief, PRD, sad, adr, data-model, contracts, tasks, test-plan, review)
 - `docs/adr/` — cross-cutting ADRs only; feature ADRs live in the feature folder
 - `docs/CONTEXT.md` — the one domain glossary for the whole product (written by `fix-term`)
 - `docs/sdlc-skills.md` — overview of all course skills, in order of use
+- `docs/process-log.md` — why the process is the way it is: one entry per adaptation or deviation from the course, appended in order
 - `backend/` — FastAPI app, Alembic migrations, tests
 - `extension/` — Chrome extension
 - `deploy/` — Compose, Caddyfile, backup scripts
@@ -77,12 +79,27 @@ The toolkit is adopted piece by piece, not installed as a plugin. The user decid
 - Adapt on copy: fix paths, drop the `sdlc:` agent namespace, replace generic stack hints with this project's stack, apply the language rules above.
 - Process changes for this repo: no PRs and no remote. `ship-feature` updates `CHANGELOG.md` and `docs/roadmap.md`, then ff-merges the branch to `main`; skip the PR body.
 - Before using an uncopied skill, read its `SKILL.md` in the source. Do not invent its protocol.
-- Feature slug: one epic from the plan = one feature, `kebab-case`, no epic number (`web-page-slice`, `chrome-extension`).
+- Every process decision (copying or adapting a skill, dropping a course rule, changing the pipeline) gets an entry in `docs/process-log.md` the same day: what, why, what was rejected, where it lives. Not a file list; git has that.
+- Three levels of work. **Product** (`/interview product` → `docs/idea-brief.md`), **repo foundation** (`roadmap` → `docs/roadmap.md`; `map-architecture` greenfield → `docs/architecture-map.md` + `docs/adr/` + scaffold tasks), **features** (the per-feature pipeline). Run the product level before the first feature.
+- Feature slug: `kebab-case`, no epic number, taken from «Складові продукту» in the product brief. Plan epics map to features like this (confirmed at the product interview; this is the default):
+
+  | Epic | Handling |
+  |---|---|
+  | 0 Скелет | not a feature — `map-architecture` + `implement-tasks` of the scaffold |
+  | 1 Веб-сторінка | `web-page-slice` |
+  | 2 Розширення | `chrome-extension` |
+  | 3 Навіщо та якорі | `save-reason-and-anchors` |
+  | 4 Ідеї | `ideas` |
+  | 5 Черга | `background-indexing` (thin PRD; user-visible outcome: instant capture, record status) |
+  | 6 Джерела | `github-repo`, `youtube-video`, `telegram-post` |
+  | 7 Якість пошуку | `search-eval`; later tuning iterations are work, not features |
+  | 8 Експлуатація | `data-export` as a feature; backup-restore and monitoring via ADR or tasks without a PRD |
 - Artifact size scales with task size (`00-overview/mvp-vs-full.md`). When in doubt, use the MVP set.
 - Diagrams: Mermaid only.
 
 Adopted so far (local, invoked as `/<name>`):
-- Skills: `interview`, `fix-term`. Shared refs: `_shared/ask-style.md`, `_shared/handoff.md`.
+- Skills: `interview` (product + feature modes), `fix-term`, `roadmap` (no RICE). Shared refs: `_shared/ask-style.md`, `_shared/handoff.md`.
+- Deja-wide deviation from the course: no RICE anywhere. Priority is argued in words (brief §4, roadmap «Чому в цьому порядку»).
 - Agents: `researcher`, `strategist`, `analyst`, `devils-advocate`.
 
 ## Workflow
