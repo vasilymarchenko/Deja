@@ -200,14 +200,18 @@ Product mode: `second-brain.md` already answers most of "problem" and "for whom"
 Collect every new domain word from §1 and the Phase 2 answers. Apply the `fix-term` generic-term filter: skip infrastructure and transport words (HTTP, JSON, queue, cache, database, framework names). Skip words already in `## Glossary` with the same sense. If nothing is left, say so and move on.
 
 For the rest, one `AskUserQuestion` batch (one question per term, up to 4 per call; a second call if more). For each term Claude proposes, from the interview phrasing:
-- the English canonical name (plus the Ukrainian UI word if the user said it in Ukrainian);
+- the English canonical name and the Ukrainian product word (the user's word if they said it in Ukrainian);
 - a one-sentence definition;
-- the NOT-reference (the concept it is confused with), or `None`.
+- the NOT-reference (the concept it is confused with), or `None`;
+- the Ukrainian translation of the definition and the NOT-reference.
 
-Options: accept the line as proposed / give your own wording / drop the term. A term found in `## Glossary` with a **different** sense gets its own question: same concept, or a new name is needed.
+Show both lines in the question, so the user confirms the Ukrainian wording too. Options: accept the entry as proposed / give your own wording / drop the term. A term found in `## Glossary` with a **different** sense gets its own question: same concept, or a new name is needed.
 
-Store the confirmed lines in `pending_glossary_lines`, already in the `fix-term` line format:
-`- <term> — <definition>. NOT <confused concept + how it differs>.`
+Store the confirmed entries in `pending_glossary_lines`, already in the `fix-term` entry format (step 7 of `fix-term` is the single definition):
+```
+- <term> — <definition>. NOT <confused concept + how it differs>.
+  - uk: **<Ukrainian word>** — <the same definition in Ukrainian>. НЕ <the same boundary>.
+```
 **Do not write `docs/CONTEXT.md` now** — Phase 12 does. Do not invoke `fix-term`; its protocol is applied here (questions) and in Phase 12 (file write), so the user is never asked after `ExitPlanMode`.
 
 At **easy** depth this batch is merged into the final confirm (Phases 10–11).
@@ -296,7 +300,7 @@ If `ExitPlanMode` is unavailable, skip this step and go to Phase 12.
 
 - Feature mode: `mkdir` `docs/features/<slug>/` if absent. Product mode: no folder.
 - Copy the template → the target path. Product mode: rename §4 to "Чому цей продукт", fill the "Складові продукту" block (it is in the template as an HTML-commented block; uncomment it), set `epic: product`, `feature_size: n/a`. Feature mode: delete the "Складові продукту" block, keep `feature_size` as a placeholder.
-- **Glossary.** If `pending_glossary_lines` is non-empty: if `docs/CONTEXT.md` is missing, copy `.claude/skills/fix-term/templates/CONTEXT.md` there and prune empty H2s except `## Glossary`. Append each line under `## Glossary` (alphabetically if the section is sorted, else at the end). Never rewrite existing entries. Set `updated_at: <today>`. This is the `fix-term` file protocol (steps 3, 7–10) applied without its questions, because the questions already ran in Phase 3.
+- **Glossary.** If `pending_glossary_lines` is non-empty: if `docs/CONTEXT.md` is missing, copy `.claude/skills/fix-term/templates/CONTEXT.md` there and prune empty H2s except `## Glossary`. Append each two-line entry under `## Glossary` (alphabetically by the English term if the section is sorted, else at the end). Never rewrite existing entries. Set `updated_at: <today>`. This is the `fix-term` file protocol (steps 3, 7–10) applied without its questions, because the questions already ran in Phase 3.
 - Fill sections 1–14 + Related + DoD self-check. Remove template HTML comments that only instruct the filler; keep the `Why:` comment. Frontmatter:
   - `status: Confirmed`
   - `feasibility_state: confirmed`

@@ -60,12 +60,14 @@ Language is chosen by **audience**, not by file type. If a user of the product c
 
 **Rules:**
 - Never keep the same document in two languages. Split by level of detail, not by language.
+- One exception: `docs/CONTEXT.md` is bilingual per entry. The English line is canonical; the nested `uk:` line translates it and gives the Ukrainian product word. Both lines live in one entry and change together.
 - Never translate technical terms. Always write them in English, in every document and every answer, including Ukrainian prose (`embedding`, `chunk`, `worker`, `job`, `record`, `vector`).
 - This covers identifiers, library names, file paths and domain terms of this project.
 
 **SDLC artifacts:**
 - Ukrainian: `idea-brief.md`, `PRD.md`, `docs/roadmap.md`, user documentation.
-- English: everything else — `architecture-map.md`, `sad.md`, ADRs, diagrams, `data-model.md`, migrations, `contracts/`, `tasks/`, `test-plan.md`, `_review/`, `CONTEXT.md`, `CHANGELOG.md`.
+- English: everything else — `architecture-map.md`, `sad.md`, ADRs, diagrams, `data-model.md`, migrations, `contracts/`, `tasks/`, `test-plan.md`, `_review/`, `CHANGELOG.md`.
+- Bilingual: `CONTEXT.md` (English entry + Ukrainian translation, see Rules).
 
 ## SDLC toolkit (course)
 

@@ -11,8 +11,9 @@ detail (no datastore / framework names, no API contracts) — only domain words 
 boundaries between them. Implementation choices live in sad.md and ADRs; behaviour lives
 in PRD.md.
 
-One glossary for the whole product. English terms; add the Ukrainian UI word in the
-definition when it differs: (UI: «...»).
+One glossary for the whole product. Every entry is bilingual: the English line is canonical
+(code, schema, technical docs); the nested `uk:` line is its Ukrainian translation, headed by
+the Ukrainian product word used in UI and product docs.
 
 Terms are fixed the moment they appear in an interview / PRD / review — never batched.
 Empty H2 → prune before commit. ## Glossary is mandatory; the other two are optional.
@@ -20,9 +21,12 @@ Empty H2 → prune before commit. ## Glossary is mandatory; the other two are op
 
 ## Glossary
 
-<!-- One line per term: name · one-sentence canonical definition · one-sentence boundary
-     (what it is NOT). Alphabetical once there are a few. -->
+<!-- One entry per term, two lines:
+     - <term> — <one-sentence definition>. NOT <confused concept + how it differs>.
+       - uk: **<Ukrainian word>** — <the same definition in Ukrainian>. НЕ <the same boundary>.
+     Alphabetical by the English term. -->
 - <term> — <one-sentence definition>. NOT <concept it is confused with + how it differs>.
+  - uk: **<українське слово>** — <те саме визначення українською>. НЕ <та сама межа>.
 
 ## Invariants
 

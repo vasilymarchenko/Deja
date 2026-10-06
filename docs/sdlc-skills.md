@@ -12,7 +12,7 @@ They are listed in the order of use, from a raw idea to a shipped feature.
 3. **`map-architecture`** — builds the architecture map that every later skill reads. On existing code it scans the repo once; on an empty repo it agrees the stack, structure and conventions with you and writes foundational ADRs plus a scaffold `tasks.json`. Output: `docs/architecture-map.md`.
 4. **`classify-size`** (ad-hoc) — decides how big a feature is: XS, S, M, L or XL. It asks four questions (PR count, time, new module/API/migration, breaking changes) and maps the answers to a size. Output: `docs/features/<slug>/.size`; later skills use it to decide how much to write.
 5. **`roadmap`** (ad-hoc) — keeps one board of outcomes above single features. It adds items to Now / Next / Later with a RICE score and moves them between columns. Copied for Deja without RICE: Next is hand-ordered with one reason per row; the first run is seeded from the product brief. Output: `docs/roadmap.md`; `write-prd` moves an item to Now, `ship-feature` moves it to Shipped.
-6. **`fix-term`** (ad-hoc) — fixes the meaning of a domain term before it drifts. It adds one definition plus "NOT to be confused with" to the glossary and checks for conflicts. Output: `CONTEXT.md`; `write-prd` needs it.
+6. **`fix-term`** (ad-hoc) — fixes the meaning of a domain term before it drifts. It adds one definition plus "NOT to be confused with" to the glossary, in English with a Ukrainian translation, and checks for conflicts. Output: `CONTEXT.md`; `write-prd` needs it.
 
 ## Requirements
 

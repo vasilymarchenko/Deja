@@ -60,3 +60,9 @@ Format:
 **Rejected:** ADRs (overhead), entries in `CHANGELOG.md` (wrong audience and wrong subject), only git history (shows what, not why).
 **Lives in:** `docs/process-log.md`, rule in `CLAUDE.md` → SDLC toolkit.
 
+
+
+## 2026-10-06 — Glossary entries are bilingual: English line + Ukrainian translation
+**Why:** the user asked for it after the first product interview. Product docs and UI are Ukrainian, so the Ukrainian word and its exact meaning must be fixed in the same place as the English term; otherwise each brief and PRD translates the definition again and the meanings drift. The English line stays canonical for code and technical docs.
+**Rejected:** a separate Ukrainian glossary file (two documents in two languages drift; breaks the `CLAUDE.md` rule); only the Ukrainian word in `(UI: «…»)` (names the word but not its meaning or boundary).
+**Lives in:** `fix-term` (Language, step 7 entry format, template), `interview` Phase 3 and 12, `CLAUDE.md` → Language requirements (one exception to "never two languages"), `docs/CONTEXT.md`.
