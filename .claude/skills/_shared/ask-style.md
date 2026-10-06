@@ -31,7 +31,7 @@ If a question reads like a config dump or a spec excerpt, it's wrong. Write it a
 
 ## The four mandatory elements of a `description`
 
-1. **What technically happens** — concrete names: tables / endpoints / files / ADR numbers. Not «modify the API» but «add field `is_active BOOLEAN` to table `members` and a new route in the module's handler».
+1. **What concretely happens** — at the level the stage works on. In design and implementation stages: tables / endpoints / files / ADR numbers («add field `is_active BOOLEAN` to table `members` and a new route in the module's handler»). In ideation (`interview`), where none of those exist yet: the brief section that changes and the later stage it affects («§7 gets Approach C as recommended; `write-prd` will build its user stories from it»).
 2. **What you gain / what you lose** — the trade-off in plain words, **every technical term glossed**:
    - not «backfill migration» → «a script that walks every existing row and fills the new field; while it runs the rows are read-locked for writes»
    - not «cursor pagination» → «the client sends the last id it saw so the next page starts after it; avoids `OFFSET`, which slows down on large pages»
@@ -107,6 +107,6 @@ Options:
 
 The dry version is unanswerable without knowing what RICE is; the explanatory version teaches the term in the act of asking and makes the trade-off obvious.
 
-## Why (feedback, 2026-05-23 + reinforced 2026-05-29)
+## Why
 
-The user is a PM, methodist, or junior dev opening the repo for the first time. Terse English questions give them neither the substance of the decision nor the difference between options. Verbatim (2026-05-23): «Треба щоб пояснення були ще більш зрозумілими для людей котрі буквально джуни в розробці». Reinforced (2026-05-29): «при опитуваннях треба більш explanatory запитання і варіанти відповідей, бо зараз клод доволі сухо опитує і багато термінів на короткий текст» — i.e. the dryness + term-density was still happening, so this file now leads with the "never ask dryly / gloss every term" rule above.
+Inherited from the course toolkit, where terse, term-dense questions were the recurring complaint. In Deja the owner is one developer who is new to the SDLC process and to several parts of the stack, so the same rule holds: a question must teach the term in the act of asking, and the trade-off must be visible in the option itself.

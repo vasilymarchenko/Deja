@@ -4,9 +4,9 @@ description: >-
   SDLC ideation phase for Deja — the single entry point from a raw idea to a confirmed
   idea-brief. Runs a Socratic interview, competitive research (researcher agent), three
   strategic approaches (strategist agent), a multi-perspective review (analyst agent), a
-  clean-context devil's advocate (devils-advocate agent), then Claude-proposed RICE and
-  Feasibility that the user confirms. Has a depth dial (easy / medium / hard). Output:
-  docs/features/<slug>/idea-brief.md (15 sections, ≤5 pages, Ukrainian). Triggers on
+  clean-context devil's advocate (devils-advocate agent), then a Claude-proposed Feasibility
+  that the user confirms. Has a depth dial (easy / medium / hard). Output:
+  docs/features/<slug>/idea-brief.md (14 sections, Ukrainian). Triggers on
   "/interview <slug>", "raw idea", "capture an idea", "interview a feature", "brief for X",
   "idea brief", "new feature X", "ideation for <slug>", "start epic N", "інтерв'ю фічі",
   "бриф ідеї", "нова фіча". Next stage: write-prd. Does not write ADRs — that is
@@ -15,13 +15,13 @@ description: >-
 
 # Skill: interview (SDLC ideation phase)
 
-One autonomous, Claude-driven protocol for the ideation phase. Output: a single `docs/features/<slug>/idea-brief.md` with 15 sections (≤5 pages). No separate brainstorm or initiatives files.
+One autonomous, Claude-driven protocol for the ideation phase. Output: a single `docs/features/<slug>/idea-brief.md` with 14 sections. No separate brainstorm or initiatives files.
 
-Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/interview`). Changes for Deja: no greenfield mode (the repo exists), agents are local (`.claude/agents/`), the glossary is `docs/CONTEXT.md`, the brief is written in Ukrainian, the anti-pattern list uses the Deja stack.
+Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/interview`). Changes for Deja: no greenfield mode (the repo exists), agents are local (`.claude/agents/`), the glossary is `docs/CONTEXT.md`, the brief is written in Ukrainian, **no RICE** (a solo product with one user — Reach is always 1, the score ranks nothing; priority is argued in §4 "Чому зараз"), glossary terms are confirmed in the plan phase and written without `fix-term` questions, the tech-term check is derived from living docs instead of a hardcoded word list.
 
 ## Why one skill
 
-Claude does the research (competitors, approaches, perspectives, devil's advocate, RICE, Feasibility); the user confirms through `AskUserQuestion`. The user never types RICE numbers from nothing ("calculator game"). ADRs are not part of ideation; they appear at `architecture-design`. Ideation stays pure product.
+Claude does the research (competitors, approaches, perspectives, devil's advocate, Feasibility); the user confirms through `AskUserQuestion`. ADRs are not part of ideation; they appear at `architecture-design`. Ideation stays pure product.
 
 ## Owner
 
@@ -42,19 +42,45 @@ The idea author. In this project: the solo developer (Vasyl), who is also PM and
 
 ## Language
 
-- `idea-brief.md` — **Ukrainian** (product doc, see `CLAUDE.md` → Language requirements). Plain language, no code identifiers. Technical terms that have no Ukrainian form stay in English (`RICE`, `Feasibility`, `Approach A`).
+- `idea-brief.md` — **Ukrainian** (product doc, see `CLAUDE.md` → Language requirements). Plain language, no code identifiers. Domain terms stay in English as `CLAUDE.md` requires (`record`, `chunk`, `save reason`); see "Product vs implementation terms" below for what may appear at all.
 - `AskUserQuestion` text — Ukrainian, per [`../_shared/ask-style.md`](../_shared/ask-style.md).
 - Agent prompts — English. The user's answers may be Ukrainian; quote them as they are.
+
+## Product vs implementation terms
+
+The brief describes **what the user gets**, never **how we build it**. There is no fixed word list; the rule is a test plus two living sources.
+
+**The audience test.** A word may appear in the brief body if a user of the product would need it to describe what the product does for them. If swapping the word for another vendor, library, engine or algorithm would change nothing the user sees, it is an implementation term and must not appear. Examples: "пошук за змістом" passes; `embedding`, `BM25`, `pgvector` fail (the user sees search results, not the index). "запис", `record`, `save reason` pass; `jobs` table, `worker` fail.
+
+**Allowed by source (no judgment needed):**
+- every term under `## Glossary` in `docs/CONTEXT.md` — the `fix-term` generic-term filter already keeps infrastructure words out of it;
+- every term that `docs/initial-idea/second-brain.md` uses in its prose — it is the product doc written for the user.
+
+**Forbidden by source (no judgment needed):**
+- every product, library, service and protocol name listed under `## Stack` in `CLAUDE.md` (build the list at run time; do not copy it here);
+- numeric engineering targets: latency, percentiles, dimensions, sizes, SLOs.
+
+**Grey zone.** A word that is in neither source goes through the audience test. If Claude is not sure, it does not decide alone: Phase 13 collects all such words into one `AskUserQuestion` batch (keep as product term / replace with plain wording / move to §14 Open questions as a PRD-level detail). Terms confirmed as product terms are candidates for `docs/CONTEXT.md` (Phase 3).
 
 ## Depth regulator (first checkpoint)
 
 The first `AskUserQuestion` of every run picks the depth. It is written to the brief frontmatter (`depth:`).
 
-- **easy** — 3–4 checkpoints. Phase 1 (idea); Phase 2 as one batch (2–3 questions: user and pain · success criterion · scope); Phases 9–11 merged into one final confirm (Claude proposes RICE + Feasibility + recommendation together). Phases 4–8 run by Claude itself, without agents: 1–2 quick searches for §6, three one-paragraph approaches, its own list of 3–5 risks. All 15 sections are filled, but compactly.
+- **easy** — 3–4 checkpoints. Phase 1 (idea); Phase 2 as one batch (2–3 questions: user and pain · success criterion · scope); Phases 3, 10 and 11 merged into one final confirm (glossary terms + Feasibility + recommendation together). Phases 4–8 run by Claude itself, without agents: 1–2 quick searches for §6, three one-paragraph approaches, its own list of 3–5 risks. All 14 sections are filled, but compactly.
 - **medium** (default) — the full protocol below.
 - **hard** — the full protocol + one extra Socratic batch in Phase 2 + a wider §6 (5+ competitors).
 
 Easy does not relax honesty: its 3–4 `AskUserQuestion` calls are real. Fabricating answers is forbidden at every depth.
+
+**Word budget by depth** (body only — frontmatter and HTML comments excluded):
+
+| depth | budget | why |
+|---|---|---|
+| easy | ≤ 1500 | compact run, no agent output |
+| medium | ≤ 2500 | full table of 3–5 competitors, three approaches, three lenses |
+| hard | ≤ 3500 | 5+ competitors, extra Socratic batch |
+
+The budget scales with the content the depth produces; a fixed page count would force cutting exactly the research the depth asked for.
 
 ## Mode handling
 
@@ -62,16 +88,19 @@ Easy does not relax honesty: its 3–4 `AskUserQuestion` calls are real. Fabrica
 
 If the session is not in plan mode (`ExitPlanMode` unavailable), Phase 12 runs right after Phase 11. Keep all content in session memory until Phase 12 either way.
 
-**Auto Mode does not cancel checkpoints.** The `AskUserQuestion` calls in Phases 0.25, 1, 2, 9, 10, 11 are a data-input protocol, not "clarifying questions". Auto Mode covers "should I proceed" pauses between phases, not data input. If `AskUserQuestion` is denied, stop and tell the user; do not work around it.
+**Auto Mode does not cancel checkpoints.** The `AskUserQuestion` calls in Phases 0.25, 1, 2, 3, 10, 11 (and the grey-zone batch in 13, when needed) are a data-input protocol, not "clarifying questions". Auto Mode covers "should I proceed" pauses between phases, not data input. If `AskUserQuestion` is denied, stop and tell the user; do not work around it.
+
+**Phase 12 asks nothing.** Everything that needs the user's input is confirmed before `ExitPlanMode`. After it, Claude only writes, checks and proposes a commit. The one exception is the grey-zone term batch in Phase 13, which exists only if the self-check finds words that neither source decides.
 
 ## AskUserQuestion style
 
 Every question follows [`../_shared/ask-style.md`](../_shared/ask-style.md). Short version:
 
-1. **Ukrainian** labels and descriptions. Technical names (RICE, R/I/C/E, Feasibility ☑/☐, Approach A/B/C) stay as they are; actions are Ukrainian ("Прийняти Approach C", "Зменшити E", "Позначити TBD").
+1. **Ukrainian** labels and descriptions. Technical names (Feasibility ☑/☐, Approach A/B/C) stay as they are; actions are Ukrainian ("Прийняти Approach C", "Позначити TBD").
 2. **`question`** — 3–4 sentences: CONTEXT (which phase, a 1-line recap of what is collected) · WHY IT MATTERS (what breaks with a wrong answer) · WHAT TO LOOK AT before choosing.
 3. **Option `description`** — 3–5 sentences: what changes in the brief and which later phases it affects · what the option means in plain words · the hidden trade-off, stated right there. Example: "Mark recommendation as TBD" → "write-prd will refuse to run until status is Confirmed; this blocks the pipeline for this feature".
 4. **Forbidden:** terse English labels ("Confirm", "Adjust"), one-line descriptions, unexplained jargon, trade-offs hidden in a follow-up.
+5. **Ideation has no tables, endpoints or files yet.** The "concrete names" rule of `ask-style.md` means here: name the brief section and the later stage affected, not code artifacts.
 
 ## Agents
 
@@ -88,6 +117,24 @@ Rules (from the course agent contract):
 - If a local agent is unavailable at runtime, fall back to `general-purpose` with the same prompt plus the agent file's instructions (Read `.claude/agents/<name>.md` and inline it).
 - At **easy** depth, do not dispatch agents (see Depth regulator).
 
+## Phase → section map
+
+Phase numbers and brief section numbers differ. Use this table when a phase says "cite §N".
+
+| Phase | Writes section |
+|---|---|
+| 1 | §1 Сира ідея |
+| 2 | §2 Проблема · §3 Користувачі · §4 Чому зараз · §5 Поза межами |
+| 3 | `docs/CONTEXT.md` (glossary lines, written at Phase 12) |
+| 4 | §6 Аналіз конкурентів |
+| 5 | §7 Стратегічні підходи |
+| 6 | §8 Погляд з трьох сторін |
+| 7 | §9 Компроміси та граничні випадки |
+| 8 | §10 Ризики (+ feeds §9) |
+| 10 | §11 Feasibility |
+| 11 | §12 Рекомендація · §13 Відкладені підходи |
+| 7, 8, 13 | §14 Відкриті питання |
+
 ## Protocol
 
 **Phases 0–11 read-only. Phase 11.5 = ExitPlanMode. Phases 12–14 write, self-check, propose a commit.**
@@ -96,7 +143,8 @@ Rules (from the course agent contract):
 
 - **Read** `./templates/idea-brief.md` into session memory. Do not copy it yet.
 - **Read** product context: `docs/initial-idea/second-brain.md`, the matching epic in `docs/initial-idea/second-brain-plan.md`, and `docs/roadmap.md` / `docs/architecture-map.md` if present.
-- **Read** `docs/CONTEXT.md` if it exists; keep `## Glossary` as session state.
+- **Read** `CLAUDE.md` → `## Stack`; keep the list of names as the session denylist for Phase 13.
+- **Read** `docs/CONTEXT.md` if it exists; keep `## Glossary` as session state (allowlist for Phase 13, conflict check for Phase 3).
 - **Check** `docs/features/<slug>/idea-brief.md`. If it exists with `status: Confirmed` and is ≤2 weeks old, stop and offer an update instead.
 - **No Write / Edit / mkdir.**
 
@@ -119,9 +167,22 @@ Pick 3–5 questions from 5 categories, based on the shape of the idea:
 
 Ask in batches of 2–3, not all at once. Do not ask what the product docs already answer; cite them instead and ask only for gaps or contradictions.
 
-### 3. Glossary capture (deferred fix-term)
+### 3. Glossary confirmation (AskUserQuestion — mandatory when there are terms)
 
-For each new domain word in the user's answers, add it to the session list `pending_glossary_terms`. **Do not** call `fix-term` now — it writes `docs/CONTEXT.md`, which is not allowed before Phase 12. Skip generic tech words (HTTP, JSON, queue, cache, database).
+Collect every new domain word from §1 and the Phase 2 answers. Apply the `fix-term` generic-term filter: skip infrastructure and transport words (HTTP, JSON, queue, cache, database, framework names). Skip words already in `## Glossary` with the same sense. If nothing is left, say so and move on.
+
+For the rest, one `AskUserQuestion` batch (one question per term, up to 4 per call; a second call if more). For each term Claude proposes, from the interview phrasing:
+- the English canonical name (plus the Ukrainian UI word if the user said it in Ukrainian);
+- a one-sentence definition;
+- the NOT-reference (the concept it is confused with), or `None`.
+
+Options: accept the line as proposed / give your own wording / drop the term. A term found in `## Glossary` with a **different** sense gets its own question: same concept, or a new name is needed.
+
+Store the confirmed lines in `pending_glossary_lines`, already in the `fix-term` line format:
+`- <term> — <definition>. NOT <confused concept + how it differs>.`
+**Do not write `docs/CONTEXT.md` now** — Phase 12 does. Do not invoke `fix-term`; its protocol is applied here (questions) and in Phase 12 (file write), so the user is never asked after `ExitPlanMode`.
+
+At **easy** depth this batch is merged into the final confirm (Phases 10–11).
 
 ### 4. Competitive research (`researcher` agent, read-only)
 
@@ -154,23 +215,17 @@ Dispatch `devils-advocate`. The prompt says: **"Mode B — no PRD yet"** and inl
 
 The sharpest vector goes to §10 Risks. The rest feed §9 Edge cases.
 
-### 9. Claude-proposed RICE (AskUserQuestion — mandatory)
+### 9. (removed) RICE
 
-Claude computes R / I / C / E from upstream sections:
-- **Reach** ← §3 Users (users affected per quarter). For a personal product, state that honestly (e.g. 1 user now, N beta users later) and explain the scale used.
-- **Impact** ← §2 problem severity + Executive bullets (0.25 / 0.5 / 1 / 2 / 3).
-- **Confidence** ← number of TBDs and open questions: many unresolved → 0.5; all facts concrete → 1.0.
-- **Effort** ← the recommended-candidate Effort signal from §7 (S = 1–2 person-weeks, M = 3–5, L = 6–12). Account for solo, part-time work.
-
-Compute `R × I × C / E`. Ask per number (4 questions, or 1 multi-question batch) with options: confirm N / adjust higher / adjust lower / mark TBD. The rationale in the brief cites the upstream section.
+Not used in Deja. Priority is argued in prose in §4 "Чому зараз" (what in the plan or in daily use makes this the next step) and the Effort signal of the recommended approach in §7. Do not compute a score, do not add a `value_score` to the frontmatter.
 
 ### 10. Claude-proposed Feasibility (read-only repo scan + AskUserQuestion — mandatory)
 
 Scan the repo read-only (`Glob` / `Grep` over `backend/`, `extension/`, `deploy/`, `docs/features/`, `docs/architecture-map.md`) for adjacent shipped features with similar tech or workflow. Early in the project there may be none — say so plainly and base the estimate on the planned stack in `CLAUDE.md` and on the user's answers, not on invented precedent.
 
 Propose 3 checkboxes, each with a rationale:
-- **Tech** ☑/☐ — "similar to <feature> in <module>" or "planned stack covers it: <reason>".
-- **Skills** ☑/☐ — what the developer has already done; note learning curves (e.g. Chrome extension APIs).
+- **Tech** ☑/☐ — "similar to <feature> in <module>" or "planned stack covers it: <reason>". The rationale in the brief stays product-level ("the planned storage already supports this kind of search"); stack names from the scan stay in session memory.
+- **Skills** ☑/☐ — what the developer has already done; note learning curves (e.g. browser extension APIs).
 - **Time** ☑/☐ — compare with the epic's estimate in the plan.
 
 Ask per checkbox (or one batch): confirm ☑ / flip to ☐ with a reason / TBD.
@@ -178,12 +233,14 @@ Ask per checkbox (or one batch): confirm ☑ / flip to ☐ with a reason / TBD.
 ### 11. Recommendation (AskUserQuestion — mandatory)
 
 Claude picks one of the three approaches and writes a 3–5 sentence rationale. It MUST cite:
-- RICE score (§11);
-- Feasibility state (§12);
+- Feasibility state (§11);
 - ≥1 synthesis-matrix cell (§8);
-- ≥1 competitive gap (§6).
+- ≥1 competitive gap (§6);
+- the sharpest devil's-advocate vector (§10) and how the chosen approach survives it.
 
 Ask: accept the recommendation / pick a different approach / mark as TBD.
+
+At **easy** depth, Phases 3, 10 and 11 are one `AskUserQuestion` call.
 
 ### 11.5. ExitPlanMode handoff (plan → execute)
 
@@ -191,37 +248,38 @@ Everything above lives in session memory. Now call `ExitPlanMode` with a plan:
 
 1. Create `docs/features/<slug>/` if absent.
 2. Copy `./templates/idea-brief.md` → `docs/features/<slug>/idea-brief.md`.
-3. Apply `pending_glossary_terms` via the `fix-term` skill to `docs/CONTEXT.md`.
-4. Fill the 15 sections + Related + DoD self-check from session memory (Phases 1–11), in Ukrainian.
-5. Set frontmatter: `status: Confirmed`, `value_score.{rice,state,confirmed_at}`, `feasibility_state: confirmed`.
+3. Append `pending_glossary_lines` to `docs/CONTEXT.md` (bootstrap it from the `fix-term` template if missing).
+4. Fill the 14 sections + Related + DoD self-check from session memory (Phases 1–11), in Ukrainian.
+5. Set frontmatter: `status: Confirmed`, `feasibility_state: confirmed`, `depth`, `updated_at`.
 6. Run the Phase 13 self-check.
 7. Propose a commit and print the handoff block.
 
 If `ExitPlanMode` is unavailable, skip this step and go to Phase 12.
 
-### 12. Execute: write the brief
+### 12. Execute: write the brief (no questions)
 
 - `mkdir` `docs/features/<slug>/` if absent.
 - Copy the template → `docs/features/<slug>/idea-brief.md`.
-- Apply pending glossary terms: invoke `fix-term` once per term (it asks the user for the definition; offer the phrasing from the interview as an option). If there are none, skip.
-- Fill sections 1–15 + Related + DoD self-check. Remove template HTML comments that only instruct the filler; keep the `Why:` comment. Frontmatter:
+- **Glossary.** If `pending_glossary_lines` is non-empty: if `docs/CONTEXT.md` is missing, copy `.claude/skills/fix-term/templates/CONTEXT.md` there and prune empty H2s except `## Glossary`. Append each line under `## Glossary` (alphabetically if the section is sorted, else at the end). Never rewrite existing entries. Set `updated_at: <today>`. This is the `fix-term` file protocol (steps 3, 7–10) applied without its questions, because the questions already ran in Phase 3.
+- Fill sections 1–14 + Related + DoD self-check. Remove template HTML comments that only instruct the filler; keep the `Why:` comment. Frontmatter:
   - `status: Confirmed`
-  - `value_score.rice: <N>`, `value_score.state: confirmed`, `value_score.confirmed_at: <today YYYY-MM-DD>`
   - `feasibility_state: confirmed`
   - `updated_at: <today>`, `depth: <level>`
   - `feature_size` stays a placeholder — `classify-size` sets it.
 
-Parked approaches (the 2 not recommended) go to §14 with a reason and a revisit trigger.
+Parked approaches (the 2 not recommended) go to §13 with a reason and a revisit trigger.
 
 ### 13. Self-check vs DoD
 
 Run all checks (Read + Grep over the written file):
-- **15 sections present** — 1–15 + Related + DoD self-check filled.
-- **No tech terms in the body.** Regex, excluding the DoD self-check block and frontmatter:
-  `\b(Postgres|PostgreSQL|pgvector|FastAPI|SQLAlchemy|Alembic|Pydantic|trafilatura|Caddy|Docker|Compose|Hetzner|Redis|Kafka|JSONB|SQL|BM25|HNSW|p99)\b`. Word boundaries matter.
-- **Length ≤ 5 pages** (~2200 words ±10%). If over, compress §7 paragraphs and the §6 table.
-- **Rationale citations** — §13 cites §6 (1 gap) + §8 (1 cell) + §11 (RICE) + §12 (Feasibility).
-- **Language** — headings and prose are Ukrainian.
+- **14 sections present** — 1–14 + Related + DoD self-check filled.
+- **No implementation terms in the body.** Build the check at run time, excluding frontmatter and HTML comments:
+  1. Grep for every name from the Phase 0 denylist (`CLAUDE.md` → `## Stack`), word boundaries on. Any hit → rewrite the sentence in product language.
+  2. Grep for numeric engineering targets (`ms`, `p9\d`, `dims?`, `SLO`, `QPS`). Any hit → move to §14 Open questions as "for the PRD".
+  3. Read the body once more for grey-zone words (English technical nouns not in `## Glossary` and not in `second-brain.md`). Apply the audience test. Words Claude cannot decide go to **one** `AskUserQuestion` batch: keep / replace with plain wording / move to §14.
+- **Word budget** per depth (see Depth regulator), body only. If over: shorten §8 bullets and the §9 pros/cons table first, then §10. Never drop a competitor row from §6 or a field from a §7 approach — that is the research the depth asked for.
+- **Rationale citations** — §12 cites §6 (1 gap) + §8 (1 cell) + §10 (1 vector) + §11 (Feasibility).
+- **Language** — headings and prose are Ukrainian; domain terms in English per `CLAUDE.md`.
 
 If a check fails, fix the section and re-check.
 
@@ -235,37 +293,42 @@ Add idea-brief for <slug>
 
 If `docs/CONTEXT.md` changed, include it in the same commit.
 
-Then print the handoff block per [`../_shared/handoff.md`](../_shared/handoff.md): *What I did* · *Review before continuing* (`docs/features/<slug>/idea-brief.md`, `docs/CONTEXT.md` if changed) · *Run next* = `/write-prd <slug>` (if `write-prd` is not yet in `.claude/skills/`, say it must be copied from the course toolkit first).
+Then print the handoff block per [`../_shared/handoff.md`](../_shared/handoff.md): *What I did* · *Review before continuing* (`docs/features/<slug>/idea-brief.md`, `docs/CONTEXT.md` if changed) · *Run next* = `/write-prd <slug>` (if `write-prd` is not yet in `.claude/skills/`, say it must be copied from the course toolkit first). `feature_size` is not set at this stage; do not report a default size — `write-prd` establishes it.
 
-If the recommendation looks like a hard-to-reverse technical choice, note it in §15 Open questions. Do not open an ADR here.
+If the recommendation looks like a hard-to-reverse technical choice, note it in §14 Open questions. Do not open an ADR here.
 
 ## Definition of Done
 
 - `docs/features/<slug>/idea-brief.md` created, in Ukrainian; commit proposed.
-- All 15 sections filled (no empty H2; `<!-- TBD: ... -->` allowed where honestly missing).
-- No tech terms in the body (Phase 13 regex).
-- Length ≤ 5 pages (~2200 words ±10%).
-- Frontmatter `status: Confirmed`, `value_score.state: confirmed`, `feasibility_state: confirmed`, `confirmed_at: <date>`.
-- §13 rationale cites §11 RICE + §12 Feasibility + ≥1 cell of §8 + ≥1 gap of §6.
-- `AskUserQuestion` checkpoints really fired in Phases 0.25, 1, 2, 9, 10, 11. If any answer was fabricated, the artifact is not DoD-valid.
+- All 14 sections filled (no empty H2; `<!-- TBD: ... -->` allowed where honestly missing).
+- No implementation terms in the body (Phase 13 check: Stack denylist, numeric targets, grey-zone batch resolved).
+- Body within the word budget of the chosen depth.
+- Frontmatter `status: Confirmed`, `feasibility_state: confirmed`, `depth` set.
+- §12 rationale cites §11 Feasibility + ≥1 cell of §8 + ≥1 gap of §6 + the top vector of §10.
+- Glossary lines, if any, appended to `docs/CONTEXT.md` with `updated_at` stamped; no question was asked after `ExitPlanMode` except the grey-zone batch.
+- `AskUserQuestion` checkpoints really fired: medium / hard — Phases 0.25, 1, 2, 3 (when terms exist), 10, 11; easy — Phases 0.25, 1, 2 and the merged final confirm. If any answer was fabricated, the artifact is not DoD-valid.
 - Handoff block printed; next stage `write-prd`.
 
 ## Anti-patterns
 
 - **Inventing competitors.** `N/A — <reason>` is better than fake research. Rows need real URLs, features and value ratings.
-- **User-input RICE.** Claude proposes from upstream sections; the user confirms or adjusts.
-- **Tech terms in the brief body** (Postgres, pgvector, FastAPI, embeddings as a storage choice, latency targets). This is a product brief. Tech lives in the PRD NFRs, `sad.md` and ADRs.
+- **Scoring instead of arguing.** No RICE, no made-up numbers for a one-user product. §4 says in words why this is next.
+- **Implementation terms in the brief body** (stack names, index types, embeddings as a storage choice, latency targets). This is a product brief. Tech lives in the PRD NFRs, `sad.md` and ADRs.
+- **Hardcoding the term list in this skill.** The denylist comes from `CLAUDE.md` → `## Stack`, the allowlist from `docs/CONTEXT.md` and `docs/initial-idea/`. Update those, not this file.
 - **One approach in §7.** Always three (Simplicity / Differentiation / Balanced).
 - **Skipping the multi-perspective review.** All three lenses are needed.
 - **Devil's advocate in the same context.** Phase 8 must use a clean-context agent.
 - **Feasibility without a repo scan.** "Tech ☑ — we know how" without evidence is a guess.
 - **Recommendation without the 4 citations.**
+- **Asking the user after `ExitPlanMode`** (except the grey-zone batch). Glossary questions belong to Phase 3.
+- **Invoking `fix-term` from inside this skill.** Apply its line format and file protocol; do not run its interactive protocol a second time.
 - **Proposing an ADR at the end.** ADRs belong to `architecture-design`.
-- **Transcript dump.** §14 is a structured table, not a chat log.
+- **Transcript dump.** §13 is a structured table, not a chat log.
 - **Solution in §2 Problem.** §2 is the problem only.
 - **Re-asking what the product docs already say.** Cite `docs/initial-idea/**`; ask only for gaps.
 - **Fabricating answers under Auto Mode.**
 - **Writing files before Phase 12.**
+- **Cutting research to fit a length.** Shorten synthesis (§8, §9), not evidence (§6, §7).
 
 ## Template
 
@@ -276,21 +339,20 @@ If the recommendation looks like a hard-to-reverse technical choice, note it in 
 > **User:** "/interview web-page-slice"
 >
 > **— Read-only —**
-> 1. **Phase 0** — reads the template, `second-brain.md`, Epic 1 of the plan; no `docs/CONTEXT.md` yet.
+> 1. **Phase 0** — reads the template, `second-brain.md`, Epic 1 of the plan, the `## Stack` list from `CLAUDE.md`; no `docs/CONTEXT.md` yet.
 > 2. **Phase 0.25** — depth question; user picks medium.
 > 3. **Phase 1** — offers Epic 1's text as an option; user rewrites it in their own words; stored verbatim.
 > 4. **Phase 2** — batch 1: "Яку сторінку ти зберігаєш найчастіше і як потім шукаєш?", "Що означає «знайшов» — за скільки секунд?"; batch 2: constraints and fit.
-> 5. **Phase 3** — "record" and "save reason" go to `pending_glossary_terms` (glossary terms are English, see `CLAUDE.md`).
+> 5. **Phase 3** — proposes lines for `record` and `save reason` with definitions from the answers; user accepts both. Stored as `pending_glossary_lines`.
 > 6. **Phase 4** — `researcher` returns 4 rows (read-later and bookmark-search tools) + the gap "no search by the reason for saving".
 > 7. **Phase 5** — `strategist` returns A (save + text search), B (save + "why" + semantic search), C (B without auto-summaries).
 > 8. **Phase 6** — `analyst` returns per-lens bullets + the matrix.
 > 9. **Phase 7** — trade-offs + 6 edge cases.
 > 10. **Phase 8** — `devils-advocate` (Mode B) returns 7 vectors; top: "pages behind login save as empty".
-> 11. **Phase 9** — RICE proposed; user lowers Effort → confirmed.
-> 12. **Phase 10** — repo has no code yet; Feasibility based on the planned stack; user confirms.
-> 13. **Phase 11** — recommends C; rationale cites RICE, Feasibility, a UX cell, the competitive gap; user accepts.
+> 11. **Phase 10** — repo has no code yet; Feasibility based on the planned stack; user confirms.
+> 12. **Phase 11** — recommends C; rationale cites Feasibility, a UX cell, the competitive gap, the login-wall vector; user accepts.
 >
 > **— Execute —**
-> 14. **Phase 12** — creates `docs/features/web-page-slice/idea-brief.md`; `fix-term` adds "record" and "save reason" to `docs/CONTEXT.md`.
-> 15. **Phase 13** — self-check passes.
-> 16. **Phase 14** — proposes `Add idea-brief for web-page-slice`; prints the handoff block with `/write-prd web-page-slice`.
+> 13. **Phase 12** — creates `docs/features/web-page-slice/idea-brief.md`; bootstraps `docs/CONTEXT.md` and appends the two glossary lines. No questions.
+> 14. **Phase 13** — Stack grep is clean; the word "парсер" is grey-zone → one batch, user replaces it with "витягування тексту"; word count 2100 ≤ 2500.
+> 15. **Phase 14** — proposes `Add idea-brief for web-page-slice`; prints the handoff block with `/write-prd web-page-slice`.

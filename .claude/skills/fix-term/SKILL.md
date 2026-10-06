@@ -6,15 +6,19 @@ description: >-
   one canonical definition plus a NOT-reference so a homonym cannot bite later.
   Triggers on "/fix-term <term>", "add term X", "fix term X", "what is X in our domain",
   "add to CONTEXT", "fix the glossary", "define X", "додай термін", "онови глосарій",
-  "що означає X". Also called by the interview skill with a batch of pending terms.
+  "що означає X". Not invoked by the interview skill — see the end of the description.
   Lazy-bootstraps docs/CONTEXT.md from a template, checks for a conflicting entry, asks
   for a one-sentence definition + the concept it is confused with, and appends one line
   to ## Glossary. Refuses generic tech words (HTTP, queue, cache). Runs anytime, no gate.
+  The interview skill does not invoke it: it asks the same questions in its own plan phase
+  and appends lines in this format at its write phase.
 ---
 
 # Skill: fix-term
 
-Lazy utility. It fixes the meaning of a domain term in `docs/CONTEXT.md` the moment the term first appears, so its sense does not drift across the pipeline. For each term it records a one-sentence canonical definition and, when the word is ambiguous, a **NOT-reference** naming the concept it is confused with. It runs anytime with no upstream gate: one term mid-interview, or a batch handed over by `interview` or `write-prd`. Later skills treat `## Glossary` as canonical.
+Lazy utility. It fixes the meaning of a domain term in `docs/CONTEXT.md` the moment the term first appears, so its sense does not drift across the pipeline. For each term it records a one-sentence canonical definition and, when the word is ambiguous, a **NOT-reference** naming the concept it is confused with. It runs anytime with no upstream gate: one term spotted in a PRD, a review, or a chat. Later skills treat `## Glossary` as canonical.
+
+**Relation to `interview`.** `interview` does not call this skill. It runs steps 2, 4–7 (filter, conflict check, definition, NOT-reference) as its own Phase 3 batch before `ExitPlanMode`, and steps 3, 8–10 (bootstrap, append, prune, stamp) in its Phase 12, so the user is never asked after the plan is approved. Both skills produce the same line format; keep step 7 as the single definition of it.
 
 Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/fix-term`). Changes for Deja: one glossary for the whole product (`docs/CONTEXT.md`), no multi-context mode, English terms.
 
@@ -28,8 +32,8 @@ Whoever spots the ambiguity. In this project: the solo developer.
 ## Inputs
 
 - `<term>` — the domain word or phrase. If missing, ask for it.
-- (Optional) `pending_glossary_terms` — a batch from `interview` / `write-prd`. Process each term in turn.
-- (Optional) phrasings already heard in the interview — offer them as definition options instead of a blank question.
+- (Optional) a batch of terms from `write-prd`. Process each term in turn.
+- (Optional) phrasings already heard upstream — offer them as definition options instead of a blank question.
 
 ## Language
 
@@ -52,7 +56,7 @@ Whoever spots the ambiguity. In this project: the solo developer.
 7. **Compose one line.** `- <term> — <one-sentence definition>. NOT <confused concept + how it differs>.` Or, when step 6 = None, `- <term> — <definition>.`
 8. **Append under `## Glossary`.** Insert alphabetically if the section is sorted, else at the end. Never rewrite existing entries.
 9. **Prune empty H2s.** On a fresh bootstrap, delete `## Invariants` / `## Out of scope` if they have no real content. `## Glossary` is mandatory.
-10. **Stamp + commit + handoff.** Set `updated_at: <today>`. Propose a commit `Add <term> to glossary` (or `Add <term>, <term2> to glossary`); when called from `interview`, fold into that skill's commit instead. When run standalone, print the handoff block per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant). When called from `interview` in a batch, skip the handoff block — the caller prints one.
+10. **Stamp + commit + handoff.** Set `updated_at: <today>`. Propose a commit `Add <term> to glossary` (or `Add <term>, <term2> to glossary`). When run standalone, print the handoff block per [`../_shared/handoff.md`](../_shared/handoff.md) (utility variant). When called from another skill (`write-prd`) in a batch, fold into the caller's commit and skip the handoff block — the caller prints one.
 
 ## Definition of Done
 

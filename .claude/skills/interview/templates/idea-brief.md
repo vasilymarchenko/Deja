@@ -7,10 +7,6 @@ feature_size: <XS|S|M|L|XL>     # set by classify-size, not here
 stage: "01"
 depth: easy | medium | hard     # interview depth used
 epic: "<epic number from docs/initial-idea/second-brain-plan.md, or none>"
-value_score:
-  rice: <number>                # computed by Claude
-  state: proposed | confirmed
-  confirmed_at: "<YYYY-MM-DD>"
 feasibility_state: proposed | confirmed
 ---
 
@@ -19,8 +15,10 @@ feasibility_state: proposed | confirmed
 
 <!-- Filler rules (Claude self-check, remove this comment when filling):
      The body is UKRAINIAN, plain language, no code identifiers.
-     Forbidden in the body: stack names (Postgres, pgvector, FastAPI, SQLAlchemy, Alembic,
-     trafilatura, Caddy, Docker, Hetzner), table schemas, API endpoints, latency targets, SLOs.
+     Product terms only — the audience test in SKILL.md: a word stays if the user needs it to
+     describe what the product does for them. Allowed by source: docs/CONTEXT.md glossary,
+     docs/initial-idea/second-brain.md. Forbidden by source: every name under "## Stack" in
+     CLAUDE.md, plus numeric engineering targets. No RICE — priority is argued in §4.
      This is a PRODUCT brief. Tech lives in PRD NFRs, sad.md and ADRs. -->
 
 # Idea Brief — <назва фічі>
@@ -55,7 +53,7 @@ feasibility_state: proposed | confirmed
 - **Метрика результату:** <1 KPI: baseline → target>
 - **Головний компроміс:** <1 line>
 - **Effort signal:** S / M / L
-- **Рекомендовано?** ◯ / ● (filled in §13)
+- **Рекомендовано?** ◯ / ● (filled in §12)
 
 ### Approach B — <назва>
 <same structure>
@@ -99,44 +97,35 @@ feasibility_state: proposed | confirmed
 - <top devil's advocate vector, phase 8>
 - <other risks>
 
-## 11. RICE — пропозиція Claude
-- **Reach (R):** <number> — <rationale, cites §3>
-- **Impact (I):** <0.25 | 0.5 | 1 | 2 | 3> — <rationale, cites §2 and §8 Executive>
-- **Confidence (C):** <0.5 | 0.7 | 0.8 | 1.0> — <rationale, cites the number of open questions in §15>
-- **Effort (E):** <person-weeks> — <rationale, cites the Effort signal in §7>
-- **RICE = R × I × C / E = <number>**
-- **Стан:** proposed | confirmed
-
-## 12. Feasibility — пропозиція Claude
+## 11. Feasibility — пропозиція Claude
 - [☑/☐] **Tech:** <rationale — adjacent feature from the repo scan, or the planned stack>
 - [☑/☐] **Skills:** <rationale>
 - [☑/☐] **Time:** <rationale — compare with the epic estimate in the plan>
 - **Стан:** proposed | confirmed
 
-## 13. Рекомендація
+## 12. Рекомендація
 **Обрано: Approach <X>** — <3-5 sentence rationale>
 
-<Rationale MUST cite: RICE from §11, Feasibility from §12, ≥1 matrix cell from §8, ≥1 gap from §6.>
+<Rationale MUST cite: Feasibility from §11, ≥1 matrix cell from §8, ≥1 gap from §6, the top risk from §10 and how the chosen approach survives it.>
 
 **Що ми фіксуємо:** <what this commits us to for the PRD stage>
 
-## 14. Відкладені та відхилені підходи
+## 13. Відкладені та відхилені підходи
 | # | Підхід | Статус | Причина | Коли повернутися |
 |---|---|:---:|---|---|
 | <B> | <name> | відкладено | <reason> | <trigger> |
 | <C> | <name> | відкладено | <reason> | <trigger> |
 
-## 15. Відкриті питання
+## 14. Відкриті питання
 - [ ] <question> — відповідальний: <name>, термін: <date>
 
 ## Пов'язане
 - <links: docs/CONTEXT.md, epic in docs/initial-idea/second-brain-plan.md, related features>
 
 ## DoD self-check
-- [ ] 15 розділів заповнено
-- [ ] Немає технічних термінів (назв стеку)
-- [ ] Обсяг ≤ 5 сторінок (~2200 слів)
+- [ ] 14 розділів заповнено
+- [ ] Немає термінів реалізації (перевірка за `## Stack` у CLAUDE.md, числові цілі, сіра зона)
+- [ ] Обсяг у межах бюджету слів для обраної глибини (easy 1500 / medium 2500 / hard 3500)
 - [ ] Frontmatter status: Confirmed
-- [ ] RICE підтверджено (state: confirmed)
 - [ ] Feasibility підтверджено (state: confirmed)
-- [ ] Рекомендація посилається на §6, §8, §11, §12
+- [ ] Рекомендація посилається на §6, §8, §10, §11
