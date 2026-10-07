@@ -1,0 +1,97 @@
+{
+  "slug": "_scaffold",
+  "source": "docs/architecture-map.md (mode: greenfield-bootstrap, reflects a651b1b)",
+  "tdd_anchor": "Scaffold tasks have no feature AC. RED = does not boot / tooling does not run; GREEN = boot + empty suite + migration apply/revert all succeed.",
+  "tasks": [
+    {
+      "id": "S1",
+      "title": "Create backend/ layout with uv + Python 3.14, app entry point, config, and a /health endpoint",
+      "layer": "scaffold",
+      "deps": [],
+      "acs": [],
+      "dod": "`uv run` boots the API locally; GET /health returns 200; backend/app/ has core/ and main.py per map § Module layout; settings load from .env via pydantic-settings",
+      "files_hint": ["backend/pyproject.toml", "backend/uv.lock", "backend/app/main.py", "backend/app/core/config.py", "backend/app/core/db.py"]
+    },
+    {
+      "id": "S2",
+      "title": "Wire pytest with a boot smoke test and an integration fixture on a real Postgres + pgvector container",
+      "layer": "scaffold",
+      "deps": ["S1"],
+      "acs": [],
+      "dod": "pytest runs green; the boot smoke test hits /health; an integration test opens a session on a real pgvector Postgres and runs SELECT 1",
+      "files_hint": ["backend/tests/conftest.py", "backend/tests/test_smoke.py"]
+    },
+    {
+      "id": "S3",
+      "title": "Set up Alembic + an initial migration: pgvector extension, users, api_keys (UUID v7 keys, user_id invariant)",
+      "layer": "scaffold",
+      "deps": ["S1"],
+      "acs": [],
+      "dod": "the migration upgrades, downgrades and upgrades again cleanly on a fresh Postgres 18 + pgvector; file name follows YYYYMMDD_HHMM_<what>.py",
+      "files_hint": ["backend/alembic.ini", "backend/alembic/env.py", "backend/alembic/versions/"]
+    },
+    {
+      "id": "S4",
+      "title": "Compose file for local dev: API, worker placeholder (same image, other command), Postgres 18 + pgvector",
+      "layer": "scaffold",
+      "deps": ["S1"],
+      "acs": [],
+      "dod": "`docker compose up` boots the stack; the worker placeholder starts and idles; S2 and S3 pass against the compose Postgres",
+      "files_hint": ["deploy/compose.yaml", "backend/Dockerfile", "backend/app/jobs/worker.py"]
+    },
+    {
+      "id": "S5",
+      "title": "API-key auth: X-API-Key dependency checking SHA-256 hashes in api_keys, and a create-key CLI command",
+      "layer": "scaffold",
+      "deps": ["S2", "S3"],
+      "acs": [],
+      "dod": "an authenticated test endpoint returns 401 without a key, 401 with a wrong key, 200 with a key from `create-key --user <name>`; only the hash is stored; /health stays public",
+      "files_hint": ["backend/app/core/auth.py", "backend/app/cli.py", "backend/tests/test_auth.py"]
+    },
+    {
+      "id": "S6",
+      "title": "Structured JSON logging and the error envelope",
+      "layer": "scaffold",
+      "deps": ["S1", "S2"],
+      "acs": [],
+      "dod": "logs are one JSON object per line; any API error, including validation and 404, returns {\"error\": {\"code\", \"message\"}} with the right status; tested",
+      "files_hint": ["backend/app/core/logging.py", "backend/app/core/errors.py", "backend/tests/test_errors.py"]
+    },
+    {
+      "id": "S7",
+      "title": "One local check command `uv run poe check`: ruff check, ruff format --check, mypy --strict, pytest, migration round-trip",
+      "layer": "scaffold",
+      "deps": ["S2", "S3", "S5", "S6"],
+      "acs": [],
+      "dod": "one command runs every part and exits non-zero on any failure; it passes on the current tree",
+      "files_hint": ["backend/pyproject.toml"]
+    },
+    {
+      "id": "S8",
+      "title": "CI: GitHub Actions runs `uv run poe check` on every PR with a Postgres + pgvector service container",
+      "layer": "scaffold",
+      "deps": ["S7"],
+      "acs": [],
+      "dod": "a PR to main shows the check job; it runs the same command as local and fails the PR when the command fails",
+      "files_hint": [".github/workflows/check.yml"]
+    },
+    {
+      "id": "S9",
+      "title": "Production compose (Caddy + API + worker + Postgres), deploy/deploy.sh over SSH, nightly pg_dump cron on the server",
+      "layer": "scaffold",
+      "deps": ["S4"],
+      "acs": [],
+      "dod": "`docker compose -f deploy/compose.prod.yaml config` validates; deploy.sh does git pull, compose up -d --build, alembic upgrade head; the backup script writes a dated dump locally and is tested against the dev stack. The first real deploy waits for a domain (map § Open)",
+      "files_hint": ["deploy/compose.prod.yaml", "deploy/Caddyfile", "deploy/deploy.sh", "deploy/backup.sh"]
+    },
+    {
+      "id": "S10",
+      "title": "Update CLAUDE.md (short Stack section pointing at the map, fill Commands) and .env.example",
+      "layer": "scaffold",
+      "deps": ["S7", "S8", "S9"],
+      "acs": [],
+      "dod": "CLAUDE.md matches docs/architecture-map.md; Commands lists run, test, check, migrate, create-key, deploy; .env.example lists every variable read by the settings",
+      "files_hint": ["CLAUDE.md", ".env.example"]
+    }
+  ]
+}
