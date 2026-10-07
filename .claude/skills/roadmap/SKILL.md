@@ -18,7 +18,7 @@ The **portfolio layer** above the per-feature pipeline. The pipeline builds one 
 
 A roadmap is **direction, not a promise**, and **not a release plan**: feature-and-date roadmaps project false certainty, go stale fastest the further out they reach, and commit to solutions before discovery. So this roadmap encodes *decreasing certainty over time* and never carries dates. Repo-level utility — one file serves the whole repo.
 
-Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/roadmap`). Changes for Deja: **no RICE** (`[assume:users=one]` in `CLAUDE.md` — Reach is always 1, the score ranks nothing; the order inside Next is argued in one line per row instead); the first run is seeded from the product brief's "Складові продукту" and runs **after** `map-architecture`, so T's dependencies are known; the order is decided by P at each branching point, never taken from the draft plan; the file is Ukrainian (product doc, see `CLAUDE.md` → Language requirements); Shipped links the changelog entry, and a PR only when `[assume:remote=none]` in `CLAUDE.md` no longer holds.
+Adapted from the course toolkit (`agentic-engineering-course/sdlc/plugin/skills/roadmap`). Changes for Deja: **no RICE** (`[assume:users=one]` in `CLAUDE.md` — Reach is always 1, the score ranks nothing; the order inside Next is argued in one line per row instead); the first run is seeded from the product brief's "Складові продукту" and runs **after** `map-architecture`, so T's dependencies are known; the order is decided by P at each branching point, never taken from the draft plan; the file is Ukrainian (product doc, see `CLAUDE.md` → Language requirements); Shipped links the changelog entry and the PR.
 
 ## Owner
 

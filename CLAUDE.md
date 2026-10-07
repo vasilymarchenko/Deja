@@ -26,7 +26,6 @@ One owner per stage; the other role only supplies input. A skill never asks P a 
 
 Facts about the project that skills depend on. Each is stated here once, not restated elsewhere. When one changes: edit this line, add a `docs/process-log.md` entry, grep the skills for the tag.
 
-- `[assume:remote=none]` — no git remote, no PRs, no CI. Review and merge happen locally; the local check command is the CI.
 - `[assume:users=one]` — one user (the developer). No scoring by reach (no RICE), no multi-tenant isolation, no billing. `user_id` is still kept everywhere so this can change.
 
 ## Language requirements
@@ -60,7 +59,7 @@ Language is chosen by **audience**, not by file type. If a user of the product c
 
 ## Workflow
 
-- Git: branch `main`. Work on short branches, fast-forward merge to `main` locally. See `[assume:remote=none]`.
+- Git: GitHub flow. Remote `origin` = `github.com/vasilymarchenko/Deja`. Work on a short branch, push it, open a PR to `main`, merge on GitHub.
 - Commits: short imperative subject. Claude proposes a commit message; the user commits or says «commit».
 - Secrets only in `.env` (git-ignored). Keep `.env.example` current.
 - Diagrams: Mermaid only.

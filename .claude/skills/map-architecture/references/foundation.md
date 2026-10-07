@@ -31,7 +31,7 @@ Calibration sets depth and phrasing, not the set of decisions.
 | **Deploy** | Docker Compose (Caddy, API, Postgres, worker) on Hetzner CX23 | a PaaS; a single VM without containers | no (map only) |
 | **Backups** | nightly `pg_dump`; brief §14 asks where the off-server copy lives and when the first restore test is | off-server copy to object storage; restore test as a scaffold task vs an epic-8 task | yes if the user wants it as a rule |
 | **Monitoring + AI cost accounting** | brief §14 asks whether basic monitoring of broken sources and stuck jobs comes earlier than epic 8 | structured logs now, dashboard later; cost per record in the `jobs` table from day one | no (map «Open» or a scaffold task) |
-| **Conventions** | no candidate | error envelope; test layout (unit + integration on a real Postgres); migration naming; one local check command (`make check` or a script); CI only if `[assume:remote=none]` in `CLAUDE.md` changes | no |
+| **Conventions** | no candidate | error envelope; test layout (unit + integration on a real Postgres); migration naming; one local check command (`make check` or a script); CI runs the same command | no |
 
 Rules for the walk:
 - Present the candidate first, then the alternatives, then the recommendation. The user may pick an alternative; then the map records the replacement and the ADR lists the candidate as a rejected option.
@@ -83,7 +83,7 @@ Emit `docs/features/_scaffold/tasks.json`, same shape as the `break-tasks` contr
 }
 ```
 
-No CI task while `CLAUDE.md` says `[assume:remote=none]`; the local check command is the CI. If that assumption changes, add a CI task that runs the same command. If a backup or monitoring decision in G3/G4 became «now», add it as S7+.
+Add a CI task that runs the same local check command on every PR; keep it to that one command. If a backup or monitoring decision in G3/G4 became «now», add it as S7+.
 
 **The skeleton smoke test is the TDD anchor.** Scaffold tasks have no feature AC, so `implement-tasks` anchors red → green on the structural smoke test: RED = «does not boot / tooling does not run», GREEN = «boot + empty suite + migration apply/revert all succeed».
 

@@ -79,7 +79,7 @@ Rules for filling it:
 | `plan-tests` | `test-plan.md` (or `PRD.md` `## Test plan` for XS/S) | `/implement-tasks <slug>` |
 | `implement-tasks` | the committed diff (code + tests) + `tasks/tracker.md` | `/review-feature <slug>` |
 | `review-feature` | `_review/review-<date>.md` | `/ship-feature <slug>` (PASS) · `/implement-tasks <slug>` (CHANGES, no `/clear`) |
-| `ship-feature` | `CHANGELOG.md` + `docs/roadmap.md` | **Done** — ff-merge the branch to `main` (`[assume:remote=none]` in `CLAUDE.md`; open a PR instead once a remote exists); merge is your call |
+| `ship-feature` | `CHANGELOG.md` + `docs/roadmap.md` | **Done** — push the branch and open a PR to `main`; merge is your call |
 | `classify-size` | `.size` | resume — e.g. `/write-prd <slug>` |
 | `fix-term` | `CONTEXT.md` | resume — e.g. `/architecture-design <slug>` |
 | `decide-adr` | `adr/NNNN-<title>.md` | resume — `/break-tasks <slug>` or `/plan-tests <slug>` |

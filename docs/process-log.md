@@ -92,3 +92,8 @@ Format:
 **Why:** `CLAUDE.md` had grown into a description of the planning phase (stage list, adopted skills, stack candidates). Those go stale when development starts. Now it holds what stays true: sources of truth, the two roles, language rules, git workflow, commands, and an **Assumptions** block with tags (`[assume:remote=none]`, `[assume:users=one]`). Skills branch on the tags instead of restating «no remote» or «one user»; changing an assumption is one line plus a grep. Stack candidates moved to `map-architecture/references/foundation.md`, the only place they are used.
 **Rejected:** leaving the stage list in `CLAUDE.md` «until development starts» (nobody remembers to remove it); a separate `docs/assumptions.md` (one more file to forget; `CLAUDE.md` is read every session).
 **Lives in:** `CLAUDE.md`; `docs/sdlc-skills.md` → Source / Adoption rules / Stages / Adopted so far; the `[assume:…]` tags in `roadmap`, `map-architecture`, `interview`, `_shared/handoff.md`.
+
+## 2026-10-07 — GitHub remote added; `[assume:remote=none]` removed; GitHub flow
+**Why:** the repo now has a remote, `origin` = `github.com/vasilymarchenko/Deja`. The user chose GitHub flow: short branch → push → PR to `main` → merge on GitHub. Kept simple on purpose: no branch protection, no required reviews, no release flow. CI is one job that runs the local check command, added by the scaffold when that command exists.
+**Rejected:** remote as backup only, with local ff-merge kept (the user wants the full flow); a fuller setup now (protection rules, PR templates) — added step by step when needed.
+**Lives in:** `CLAUDE.md` → Assumptions, Workflow; `_shared/handoff.md` (`ship-feature` row); `roadmap`; `map-architecture` + `references/foundation.md`; `docs/sdlc-skills.md`.
